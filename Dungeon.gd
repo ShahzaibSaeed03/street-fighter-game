@@ -96,7 +96,7 @@ var _mx: bool = false
 var _my: bool = false
 var _decor: Array[Dictionary] = []
 var _floor_tex: CanvasTexture
-var _wall_tex: CanvasTexture
+var _wall_tex: Texture2D
 var _gi: int = 0
 
 
@@ -157,6 +157,32 @@ func start_position() -> Vector2:
 
 
 # ------------------------------------------------------------------ build
+## Floor: mostly the main stone tile, with a few lighter tiles scattered in (no visible repeat pattern).
+func _bake_floor(size: Vector2i) -> Texture2D:
+	var src: Image = (load("res://assets/cave_tiles.png") as Texture2D).get_image()
+	var main: Image = src.get_region(Rect2i(17 * 17, 11 * 17, 16, 16))
+	var alt: Image = src.get_region(Rect2i(18 * 17, 2 * 17, 16, 16))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 7
+	var img := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+	for x in range(0, size.x, 16):
+		for y in range(0, size.y, 16):
+			img.blit_rect(alt if rng.randf() < 0.15 else main, Rect2i(0, 0, 16, 16), Vector2i(x, y))
+	return ImageTexture.create_from_image(img)
+
+
+## Builds a texture by repeating one 16 px tile from the Roguelike Cave sheet (CC0, Kenney).
+## Tiles sit on a 17 px grid (16 px art + 1 px margin).
+func _bake_tile(cell: Vector2i, size: Vector2i) -> Texture2D:
+	var src: Image = (load("res://assets/cave_tiles.png") as Texture2D).get_image()
+	var tile: Image = src.get_region(Rect2i(cell.x * 17, cell.y * 17, 16, 16))
+	var img := Image.create(size.x, size.y, false, Image.FORMAT_RGBA8)
+	for x in range(0, size.x, 16):
+		for y in range(0, size.y, 16):
+			img.blit_rect(tile, Rect2i(0, 0, 16, 16), Vector2i(x, y))
+	return ImageTexture.create_from_image(img)
+
+
 func build(level: int = 0) -> void:
 	add_to_group("arena")
 	z_index = -10
@@ -197,7 +223,7 @@ func build(level: int = 0) -> void:
 			_sides[d["b"]]["S"] = true
 
 	_floor_tex = TexturesScript.make(String(_lv["tex"]), _lv["floor"], 11 + level_idx * 7, true)
-	_wall_tex = TexturesScript.make("brick", _lv["wall_fill"], 3 + level_idx * 5, false)
+	_wall_tex = _bake_tile(Vector2i(23, 2), Vector2i(64, 64))
 
 	var ambient := CanvasModulate.new()
 	ambient.color = _lv["ambient"]
@@ -433,6 +459,15 @@ func _kind_for(id: String) -> String:
 		return "flyer"
 	if ae > 0 and idx % ae == ae - 1:
 		return "archer"
+	var se: int = int(_lv.get("shield_every", 0))
+	var he: int = int(_lv.get("hound_every", 0))
+	if se > 0 and idx % se == se - 2:
+		return "shield"
+	if he > 0 and idx % he == 2:
+		return "hound"
+	var bl: int = int(_lv.get("blinder_every", 0))
+	if bl > 0 and idx % bl == bl - 1:
+		return "blinder"
 	return "grunt"
 
 
@@ -444,7 +479,10 @@ func _spawn_guard(id: String, route: Array, tier: int, facing: float = 0.0, boss
 		gk = _kind_for(id)
 	var pts: Array[Vector2] = []
 	for p in route:
-		var v: Vector2 = _mp(id, p)
+		# Shift each waypoint a little every run so the patrols never repeat exactly.
+		var jp: Vector2 = p + Vector2(randf_range(-45.0, 45.0), randf_range(-45.0, 45.0))
+		jp = Vector2(clampf(jp.x, 40.0, RW - 40.0), clampf(jp.y, 40.0, RH - 40.0))
+		var v: Vector2 = _mp(id, jp)
 		pts.append(_local(id, v.x, v.y))
 	var f: float = facing
 	if _mxr(id):

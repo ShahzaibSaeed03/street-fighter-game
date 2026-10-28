@@ -10,6 +10,7 @@ const Fx := preload("res://Fx.gd")
 const ItemsScript := preload("res://Items.gd")
 const SaveScript := preload("res://Save.gd")
 const ArrowScript := preload("res://Arrow.gd")
+const DecoyScript := preload("res://Decoy.gd")
 
 # ---------- Tunable stats ----------
 @export var speed: float = 250.0
@@ -39,9 +40,12 @@ var dmg_taken_mult: float = 1.0
 var speed_mult: float = 1.0
 var noise_mult: float = 1.0
 var slow_timer: float = 0.0          # >0 while stuck in quicksand
+var blind_timer: float = 0.0         # >0 after a blinder's flash: slower, no bow
+var invulnerable: float = 0.0        # >0 right after a revive: ignores damage
 var bow: Dictionary = {}
 var ammo: int = 0
 var max_ammo: int = 0
+var arrow_mult: float = 1.0
 var _shoot_timer: float = 0.0
 var _reticle: Node2D
 var _noise_boost: float = 0.0
@@ -53,6 +57,8 @@ var _dodge_time_left: float = 0.0    # remaining roll time
 var _dodge_cd_timer: float = 0.0     # time until next roll allowed
 var _dodge_dir: Vector2 = Vector2.RIGHT
 var _step_timer: float = 0.0
+var decoys: int = 3                  # noise decoys left this level
+var _decoy_was_down: bool = false
 var _flash_tween: Tween
 var _light: PointLight2D
 
@@ -64,6 +70,8 @@ func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 12     # walls + closed doors (4) and props (8)
 	_apply_loadout()
+	if Progression.has_perk("iron_skin"):
+		max_health += 25
 	health = max_health
 
 	# Warm light that follows the hero (the arena is dark, so this is what you see by)
@@ -94,13 +102,16 @@ func _apply_loadout() -> void:
 	attack_damage = int(sword["dmg"])
 	attack_cooldown = float(sword["cd"])
 	attack_range = float(sword["range"])
-	dmg_taken_mult = float(suit["dmg"])
-	speed_mult = float(suit["spd"])
+	var hero: Dictionary = ItemsScript.find("hero", String(SaveScript.equipped["hero"]))
+	dmg_taken_mult = float(suit["dmg"]) * float(hero["dmg"])
+	speed_mult = float(suit["spd"]) * float(hero["speed"])
 	noise_mult = float(suit["noise"])
-	max_health = 100 + ItemsScript.VITALITY_HP * int(SaveScript.vitality)
-	max_ammo = int(bow["ammo"])
+	max_health = 100 + ItemsScript.VITALITY_HP * int(SaveScript.vitality) + int(hero["hp"])
+	max_ammo = int(bow["ammo"]) + int(hero["arrows"])
+	arrow_mult = float(hero["arrow_mult"])
 	ammo = max_ammo
 	art.apply_loadout(suit, sword, bow)
+	art.apply_hero(hero)
 
 
 func add_ammo(n: int) -> int:
@@ -127,6 +138,8 @@ func _physics_process(delta: float) -> void:
 		return
 	_reticle.queue_redraw()
 	slow_timer = maxf(slow_timer - delta, 0.0)
+	blind_timer = maxf(blind_timer - delta, 0.0)
+	invulnerable = maxf(invulnerable - delta, 0.0)
 	_shoot_timer = maxf(_shoot_timer - delta, 0.0)
 
 	# Tick timers
@@ -149,8 +162,13 @@ func _physics_process(delta: float) -> void:
 			_end_dodge()
 	else:
 		is_sneaking = Input.is_action_pressed("sneak")
-		var spd_k: float = speed_mult * (0.45 if slow_timer > 0.0 else 1.0)
+		var spd_k: float = speed_mult * (0.45 if slow_timer > 0.0 else 1.0) * (0.6 if blind_timer > 0.0 else 1.0)
 		velocity = input_dir * (sneak_speed if is_sneaking else speed) * spd_k
+		# Decoy: E key, or the DECOY button on touch screens (edge-triggered)
+		var decoy_now: bool = Input.is_key_pressed(KEY_E) or TouchControls.consume_decoy()
+		if decoy_now and not _decoy_was_down and decoys > 0:
+			_throw_decoy(input_dir)
+		_decoy_was_down = decoy_now
 		if Input.is_action_just_pressed("dodge") and _dodge_cd_timer <= 0.0:
 			_start_dodge(input_dir)
 		elif Input.is_action_pressed("attack") and _attack_timer <= 0.0:
@@ -223,18 +241,21 @@ func _attack() -> void:
 
 # ---------- Bow ----------
 func _shoot() -> void:
+	if blind_timer > 0.0:
+		return
 	if ammo <= 0:
 		_shoot_timer = 0.3
 		get_tree().call_group("game_manager", "toast", "Out of arrows!")
 		return
 	ammo -= 1
 	_shoot_timer = float(bow["cd"])
-	var aim: Vector2 = get_global_mouse_position() - global_position
+	# Touch aim stick wins when it is held; otherwise aim at the mouse as before.
+	var aim: Vector2 = TouchControls.aim_dir * 100.0 if TouchControls.aim_active else get_global_mouse_position() - global_position
 	var dir: Vector2 = aim.normalized() if aim.length() > 26.0 else facing
 	facing = dir
 	var a = ArrowScript.new()
-	a.velocity = dir * float(bow["speed"])
-	a.damage = int(bow["dmg"])
+	a.velocity = dir * float(bow["speed"]) * (1.25 if Progression.has_perk("eagle_eye") else 1.0)
+	a.damage = int(round(float(bow["dmg"]) * arrow_mult))
 	a.pierce = int(bow["pierce"])
 	a.color = bow["color"]
 	a.position = global_position + dir * 26.0
@@ -244,11 +265,21 @@ func _shoot() -> void:
 	Audio.play("swing", -6.0, 0.2)
 
 
+# ---------- Decoy ----------
+func _throw_decoy(input_dir: Vector2) -> void:
+	decoys -= 1
+	var dir: Vector2 = input_dir.normalized() if input_dir != Vector2.ZERO else facing
+	var d = DecoyScript.new()
+	d.setup(global_position + dir * 20.0, dir)
+	get_parent().add_child(d)
+	get_tree().call_group("game_manager", "toast", "Decoy thrown (%d left)" % decoys)
+
+
 # ---------- Dodge ----------
 func _start_dodge(input_dir: Vector2) -> void:
 	is_dodging = true
 	_dodge_time_left = dodge_duration
-	_dodge_cd_timer = dodge_cooldown
+	_dodge_cd_timer = dodge_cooldown * (0.6 if Progression.has_perk("quick_roll") else 1.0)
 	_dodge_dir = input_dir.normalized() if input_dir != Vector2.ZERO else facing
 	art.self_modulate.a = 0.45  # translucent while invulnerable
 	Audio.play("dodge", -4.0)
@@ -275,6 +306,8 @@ func noise_radius() -> float:
 		r = 45.0 if is_sneaking else 120.0
 	if _noise_boost > 0.0:
 		r = maxf(r, 230.0)
+	if Progression.has_perk("light_feet"):
+		r *= 0.75
 	return r * noise_mult
 
 
@@ -286,7 +319,7 @@ func dodge_ready_ratio() -> float:
 # ---------- Damage ----------
 ## Returns true if damage was actually applied (false while dodging / dead).
 func take_damage(amount: int) -> bool:
-	if is_dead or is_dodging:
+	if is_dead or is_dodging or invulnerable > 0.0:
 		return false
 	amount = maxi(1, int(round(float(amount) * dmg_taken_mult)))
 	health = maxi(health - amount, 0)
@@ -300,6 +333,18 @@ func take_damage(amount: int) -> bool:
 	if health <= 0:
 		_die()
 	return true
+
+
+## Revive Kit: stand back up with part of your health and a short grace period.
+func revive(fraction: float) -> void:
+	is_dead = false
+	health = maxi(1, int(max_health * fraction))
+	invulnerable = 1.5
+	art.modulate = Color.WHITE
+	health_changed.emit(health, max_health)
+	_flash(Color(1.6, 1.8, 1.6))
+	Audio.play("heal")
+	Fx.burst(get_parent(), global_position, Color(0.5, 1.0, 0.6), 22, 200.0, 0.6, 4.0)
 
 
 func _die() -> void:
@@ -346,6 +391,16 @@ func upgrade_max_health(amount: int) -> void:
 
 
 # ---------- Juice ----------
+## Blinder's flash: the hero slows down and cannot shoot for a moment.
+func blind(duration: float) -> void:
+	if is_dead:
+		return
+	if blind_timer <= 0.0:
+		get_tree().call_group("game_manager", "toast", "Blinded!")
+	blind_timer = maxf(blind_timer, duration)
+	_flash(Color(2.4, 2.4, 2.2))
+
+
 func _flash(color: Color) -> void:
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()

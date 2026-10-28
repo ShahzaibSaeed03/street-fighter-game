@@ -16,6 +16,8 @@ const FIXED: Dictionary = {
 		"eye": Color(2.0, 0.2, 0.2), "blood": Color(0.3, 0.7, 0.15)},
 	"scorpion": {"skin": Color(0.62, 0.45, 0.22), "dark": Color(0.32, 0.20, 0.10), "accent": Color(0.85, 0.70, 0.35),
 		"eye": Color(1.8, 0.8, 0.2), "blood": Color(0.8, 0.7, 0.3)},
+	"hound": {"skin": Color(0.42, 0.36, 0.30), "dark": Color(0.18, 0.14, 0.12), "accent": Color(0.75, 0.65, 0.5),
+		"eye": Color(2.0, 0.9, 0.2), "blood": Color(0.6, 0.12, 0.1)},
 }
 
 var species: String = "bat"
@@ -97,6 +99,8 @@ func _draw() -> void:
 			_draw_golem()
 		"wraith":
 			_draw_wraith()
+		"hound":
+			_draw_hound()
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -163,6 +167,31 @@ func _draw_vulture() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(18, -2), Vector2(24, 1), Vector2(18, 2.5)]), Color(0.95, 0.8, 0.3))
 	draw_circle(Vector2(15.5, -2.2), 1.2, _pal["eye"])
 	draw_circle(Vector2(15.5, 2.2), 1.2, _pal["eye"])
+
+
+func _draw_hound() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	# tail, wagging
+	draw_line(Vector2(-13, 0), Vector2(-21, -5 + sin(_time * 7.0) * 3.0), dark, 2.5)
+	# legs, trotting
+	for i in 4:
+		var lx: float = -7.0 if i < 2 else 6.0
+		var sy: float = -1.0 if i % 2 == 0 else 1.0
+		var sw: float = sin(_walk * 2.2 + float(i) * PI * 0.5) * 3.5
+		draw_line(Vector2(lx, sy * 4.5), Vector2(lx + sw, sy * 11.0 + 3.0), dark, 3.0)
+	# body and head
+	_ellipse(Vector2(-2, 0), 12.0, 6.8, dark)
+	_ellipse(Vector2(-2, 0), 10.5, 5.6, skin)
+	_ellipse(Vector2(10, -1), 6.0, 5.0, dark)
+	_ellipse(Vector2(10.5, -1), 5.2, 4.2, skin)
+	# ear, snout, nose, eye
+	draw_colored_polygon(PackedVector2Array([Vector2(6, -4), Vector2(8, -12), Vector2(11, -4)]), dark)
+	draw_line(Vector2(14, -1), Vector2(20, 0), dark, 3.0)
+	draw_circle(Vector2(20.5, 0), 1.3, dark)
+	draw_circle(Vector2(12.5, -2.4), 1.4, _pal["eye"])
+	draw_line(Vector2(8, 4), Vector2(12, 4), acc, 1.0)
 
 
 func _draw_spider() -> void:

@@ -19,6 +19,7 @@ var camera: Camera2D
 var visited: Dictionary = {}
 var current_room: String = ""
 
+const MissionsScript := preload("res://Missions.gd")
 var stealth_kills: int = 0
 var kills: int = 0
 var alerts: int = 0
@@ -53,6 +54,17 @@ var _banner_tween: Tween
 var _shake_strength: float = 0.0
 var _pulse: float = 0.0
 var _last_hp: int = -1
+var damage_taken: int = 0
+var xp_earned: int = 0
+var revive_kits: int = 0
+var _kit: Node2D
+var _boss: Node
+var _boss_label: Label
+var _boss_bar: ProgressBar
+var _kit_label: Label
+var _revive_btn: Button
+const RevivePickupScript := preload("res://RevivePickup.gd")
+signal perk_chosen(id: String)
 
 
 func _ready() -> void:
@@ -77,6 +89,8 @@ func _ready() -> void:
 	_weather.position = dungeon.room_center("A")
 
 	dungeon.populate()
+	_find_boss()
+	_spawn_revive_kit()
 	dungeon.guard_died.connect(_on_guard_died)
 
 	camera = Camera2D.new()
@@ -159,6 +173,7 @@ func _build_ui() -> void:
 	_ui = CanvasLayer.new()
 	_ui.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_ui)
+	add_child(TouchControls.new())  # on-screen controls (shown on touch devices only)
 
 	# vignette (red when low on health)
 	_vignette_mat = ShaderMaterial.new()
@@ -194,6 +209,7 @@ func _build_ui() -> void:
 	_dodge_bar.show_percentage = false
 	tl.add_child(_dodge_bar)
 	_ammo_label = _label(tl, "ARROWS 0 / 0", 16, Color(0.8, 0.9, 1.0))
+	_kit_label = _label(tl, "REVIVE KIT  0", 16, Color(1.0, 0.6, 0.6))
 	var keys_row := HBoxContainer.new()
 	keys_row.add_theme_constant_override("separation", 8)
 	tl.add_child(keys_row)
@@ -208,6 +224,17 @@ func _build_ui() -> void:
 	keys_row.add_child(_key_gold)
 
 	# objective + room name (top center)
+	_boss_label = _label(_ui, "", 18, Color(1.0, 0.5, 0.45))
+	_boss_label.position = Vector2(330, 92)
+	_boss_label.custom_minimum_size = Vector2(500, 0)
+	_boss_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_boss_bar = ProgressBar.new()
+	_boss_bar.position = Vector2(326, 118)
+	_boss_bar.custom_minimum_size = Vector2(500, 14)
+	_boss_bar.show_percentage = false
+	_boss_bar.hide()
+	_boss_label.hide()
+	_ui.add_child(_boss_bar)
 	_objective = _label(_ui, "", 18, Color(1.0, 0.85, 0.4))
 	_objective.position = Vector2(330, 14)
 	_objective.custom_minimum_size = Vector2(500, 0)
@@ -265,6 +292,12 @@ func _build_end_panel() -> void:
 	_end_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_end_body = _label(box, "", 20, Color(0.85, 0.85, 0.9))
 	_end_body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_revive_btn = Button.new()
+	_revive_btn.text = "Use Revive Kit  (back up at 50% HP)"
+	_revive_btn.custom_minimum_size = Vector2(300, 48)
+	_revive_btn.pressed.connect(_revive)
+	_revive_btn.hide()
+	box.add_child(_revive_btn)
 	_end_btn = Button.new()
 	_end_btn.text = "Retry (R)"
 	_end_btn.custom_minimum_size = Vector2(220, 48)
@@ -357,8 +390,16 @@ func _show_banner(text: String, col: Color) -> void:
 
 func _on_guard_died(guard: Node2D, stealth: bool) -> void:
 	kills += 1
+	MissionsScript.add("kills")
 	if stealth:
 		stealth_kills += 1
+		MissionsScript.add("silent")
+	var kill_xp: int = Progression.KILL_XP + (Progression.SILENT_BONUS_XP if stealth else 0)
+	xp_earned += kill_xp
+	if Progression.add_xp(kill_xp) > 0:
+		toast("LEVEL UP!  Level %d" % SaveScript.level)
+	if Progression.has_perk("second_wind"):
+		player.heal(8)
 	if bool(guard.get("is_boss")):
 		finished = true
 		Audio.play("wave_complete", -2.0, 0.0)
@@ -373,10 +414,26 @@ func _on_guard_died(guard: Node2D, stealth: bool) -> void:
 		var bonus: int = 40 * stars * (level_idx + 1)
 		SaveScript.coins += bonus
 		SaveScript.record_clear(level_idx, elapsed, stars, LevelsScript.LAST)
+		SaveScript.bosses += 1
+		MissionsScript.add("levels")
+		var boss_xp: int = Progression.BOSS_XP + Progression.CLEAR_XP
+		xp_earned += boss_xp
+		var lv_gain: int = Progression.add_xp(boss_xp)
+		var done: Array[Dictionary] = Progression.evaluate({"alerts": alerts, "shadow_kills": stealth_kills, "damage_taken": damage_taken, "time": elapsed, "bosses": SaveScript.bosses})
+		var extra := "\nXP earned  %d" % xp_earned
+		if lv_gain > 0:
+			extra += "   LEVEL UP -> %d" % SaveScript.level
+		for c in done:
+			extra += "\nChallenge: %s  (+%d coins, +%d XP)" % [c["name"], c["coins"], c["xp"]]
+			for gear in Progression.gear_for(c["id"]):
+				extra += "\nNew gear unlocked: %s (see the shop)" % gear["name"]
 		await get_tree().create_timer(1.6).timeout
+		if SaveScript.pending_perks > 0:
+			await _run_perk_picker()
 		var star_text: String = "*".repeat(stars) + "-".repeat(3 - stars)
 		var body := "Stars  %s\nTime  %s\nGuards defeated  %d   (silent: %d)\nTimes spotted  %d\nBonus coins  +%d" \
 				% [star_text, _fmt_time(elapsed), kills, stealth_kills, alerts, bonus]
+		body += extra
 		if level_idx < LevelsScript.LAST:
 			Engine.set_meta("level", level_idx + 1)
 			var nxt: Dictionary = LevelsScript.LEVELS[level_idx + 1]
@@ -388,11 +445,55 @@ func _on_guard_died(guard: Node2D, stealth: bool) -> void:
 			_show_end("YOU WON THE GAME", body + "\n\nAll levels cleared! Spend your coins in the shop.", Color(0.95, 0.8, 0.3))
 
 
+## Shows the perk choice screen once per pending level-up. The game stays paused until a perk is picked.
+func _run_perk_picker() -> void:
+	var holder := ColorRect.new()
+	holder.color = Color(0, 0, 0.02, 0.85)
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_ui.add_child(holder)
+	get_tree().paused = true
+	while SaveScript.pending_perks > 0:
+		var choices: Array[Dictionary] = Progression.perk_choices()
+		if choices.is_empty():
+			break
+		for old in holder.get_children():
+			old.queue_free()
+		var center := CenterContainer.new()
+		center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		holder.add_child(center)
+		var panel := PanelContainer.new()
+		panel.add_theme_stylebox_override("panel", _panel_style())
+		center.add_child(panel)
+		var box := VBoxContainer.new()
+		box.add_theme_constant_override("separation", 12)
+		panel.add_child(box)
+		var title := _label(box, "LEVEL %d!  Choose a perk" % SaveScript.level, 34, Color(1.0, 0.85, 0.3))
+		title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		for c in choices:
+			var b := Button.new()
+			b.text = "            %s\n            %s" % [c["name"], c["desc"]]
+			b.custom_minimum_size = Vector2(520, 66)
+			b.pressed.connect(_on_perk_pressed.bind(String(c["id"])))
+			var ic := PerkIcon.make(String(c["id"]), 50)
+			ic.position = Vector2(8, 8)
+			b.add_child(ic)
+			box.add_child(b)
+		var picked: String = await perk_chosen
+		Progression.choose_perk(picked)
+	holder.queue_free()
+	get_tree().paused = false
+
+
+func _on_perk_pressed(id: String) -> void:
+	perk_chosen.emit(id)
+
+
 func _on_player_died() -> void:
 	finished = true
 	SaveScript.save()
 	await get_tree().create_timer(1.3).timeout
 	_end_btn.text = "Retry level (R)"
+	_revive_btn.visible = revive_kits > 0
 	_show_end("YOU DIED", "Level %d - %s\nYour coins are kept. Buy better gear in the shop!" % [level_idx + 1, lv["name"]], Color(0.85, 0.12, 0.12))
 
 
@@ -403,12 +504,67 @@ func _show_end(title: String, body: String, col: Color) -> void:
 	_end_panel.show()
 
 
+## Finds the boss guard once the level is populated, so its health can be shown.
+func _find_boss() -> void:
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if bool(e.get("is_boss")):
+			_boss = e
+
+
+func _update_boss_hud() -> void:
+	if _boss == null:
+		return
+	if not is_instance_valid(_boss) or int(_boss.get("health")) <= 0:
+		_boss = null
+		_boss_bar.hide()
+		_boss_label.hide()
+		return
+	_boss_bar.show()
+	_boss_label.show()
+	var hp: int = int(_boss.get("health"))
+	var mx: int = int(_boss.get("max_health"))
+	_boss_bar.max_value = float(mx)
+	_boss_bar.value = float(hp)
+	_boss_label.text = "%s   -   HP %d / %d  (%d%%)" % [String(lv["boss"]["name"]), hp, mx, int(round(100.0 * float(hp) / float(maxi(mx, 1))))]
+
+
+## One Revive Kit per level, in a random side room.
+func _spawn_revive_kit() -> void:
+	var rooms: Array = ["B", "C", "E"]
+	var id: String = rooms[randi() % rooms.size()]
+	_kit = RevivePickupScript.new()
+	_kit.position = dungeon.room_center(id)
+	add_child(_kit)
+
+
+func _check_kit_pickup() -> void:
+	if _kit == null or not is_instance_valid(_kit) or player.is_dead:
+		return
+	if player.global_position.distance_to(_kit.global_position) < 36.0:
+		revive_kits += 1
+		toast("Revive Kit found! It will bring you back once.")
+		_kit.queue_free()
+		_kit = null
+
+
+func _revive() -> void:
+	if revive_kits <= 0:
+		return
+	revive_kits -= 1
+	finished = false
+	_end_panel.hide()
+	_revive_btn.hide()
+	player.revive(0.5)
+	toast("Revived!")
+
+
 func _on_health_changed(current: int, maximum: int) -> void:
 	_hp_label.text = "HP %d / %d" % [current, maximum]
 	_hp_bar.max_value = maximum
 	var tw := create_tween()
 	tw.tween_property(_hp_bar, "value", float(current), 0.15)
 	if _last_hp >= 0 and current < _last_hp:
+		damage_taken += _last_hp - current
 		shake(8.0)
 	_last_hp = current
 
@@ -469,6 +625,9 @@ func _process(delta: float) -> void:
 		_hint.text = ""
 
 	_dodge_bar.value = player.dodge_ready_ratio() * 100.0
+	_kit_label.text = "REVIVE KIT  %d" % revive_kits
+	_update_boss_hud()
+	_check_kit_pickup()
 	_coin_label.text = "COINS  %d" % SaveScript.coins
 	_ammo_label.text = "ARROWS  %d / %d" % [player.ammo, player.max_ammo]
 

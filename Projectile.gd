@@ -6,6 +6,7 @@ const Fx := preload("res://Fx.gd")
 
 var velocity: Vector2 = Vector2.ZERO
 var damage: int = 10
+var blind: float = 0.0       # seconds of blindness this bolt causes on hit (0 = none)
 var color: Color = Color(2.0, 0.6, 0.2)
 var radius: float = 8.0
 var life: float = 3.4
@@ -41,6 +42,8 @@ func _physics_process(delta: float) -> void:
 	global_position = to
 	if is_instance_valid(_player) and not bool(_player.is_dead):
 		if global_position.distance_to(_player.global_position) < radius + 16.0:
+			if blind > 0.0:
+				_player.blind(blind)
 			if _player.take_damage(damage):
 				_pop()
 				return

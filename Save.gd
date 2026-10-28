@@ -7,10 +7,18 @@ const PATH := "user://dungeon_sneak.cfg"
 static var coins: int = 0
 static var unlocked: int = 0                    # highest level index you may play (0 = only level 1)
 static var best: Dictionary = {}                # "0" -> {"stars": 3, "time": 120.0}
-static var owned: Array = ["sword:rusty", "suit:tunic", "bow:short"]
-static var equipped: Dictionary = {"sword": "rusty", "suit": "tunic", "bow": "short"}
+static var owned: Array = ["sword:skull", "suit:tunic", "bow:short", "hero:ayaan"]
+static var equipped: Dictionary = {"sword": "skull", "suit": "tunic", "bow": "short", "hero": "ayaan"}
+static var mstats: Dictionary = {}
+static var claimed: Array = []
 static var vitality: int = 0
 static var _loaded: bool = false
+static var xp: int = 0
+static var level: int = 1
+static var pending_perks: int = 0
+static var perks: Array = []
+static var challenges_done: Array = []
+static var bosses: int = 0
 
 
 static func ensure() -> void:
@@ -32,6 +40,30 @@ static func ensure() -> void:
 	var e: Variant = cfg.get_value("save", "equipped", equipped)
 	if e is Dictionary:
 		equipped = e
+	xp = int(cfg.get_value("save", "xp", 0))
+	level = int(cfg.get_value("save", "level", 1))
+	pending_perks = int(cfg.get_value("save", "pending_perks", 0))
+	if not owned.has("sword:skull"):
+		owned.append("sword:skull")
+	if String(equipped.get("sword", "")) == "rusty" or not equipped.has("sword"):
+		equipped["sword"] = "skull"
+	if not equipped.has("hero"):
+		equipped["hero"] = "ayaan"
+	if not owned.has("hero:ayaan"):
+		owned.append("hero:ayaan")
+	var ms: Variant = cfg.get_value("save", "mstats", {})
+	if ms is Dictionary:
+		mstats = ms
+	var cl: Variant = cfg.get_value("save", "claimed", [])
+	if cl is Array:
+		claimed = cl
+	var pk: Variant = cfg.get_value("save", "perks", [])
+	if pk is Array:
+		perks = pk
+	var cd: Variant = cfg.get_value("save", "challenges_done", [])
+	if cd is Array:
+		challenges_done = cd
+	bosses = int(cfg.get_value("save", "bosses", 0))
 
 
 static func save() -> void:
@@ -40,8 +72,16 @@ static func save() -> void:
 	cfg.set_value("save", "unlocked", unlocked)
 	cfg.set_value("save", "vitality", vitality)
 	cfg.set_value("save", "best", best)
+	cfg.set_value("save", "mstats", mstats)
+	cfg.set_value("save", "claimed", claimed)
 	cfg.set_value("save", "owned", owned)
 	cfg.set_value("save", "equipped", equipped)
+	cfg.set_value("save", "xp", xp)
+	cfg.set_value("save", "level", level)
+	cfg.set_value("save", "pending_perks", pending_perks)
+	cfg.set_value("save", "perks", perks)
+	cfg.set_value("save", "challenges_done", challenges_done)
+	cfg.set_value("save", "bosses", bosses)
 	cfg.save(PATH)
 
 

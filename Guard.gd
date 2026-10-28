@@ -32,6 +32,7 @@ var summon_kind: String = ""
 var _summon_timer: float = 8.0
 var _retreat: float = 0.0
 var ranged: bool = false
+var blind_time: float = 0.0         # blinder: seconds of blindness per bolt
 var shot_damage: int = 10
 var shoot_cd: float = 1.8
 var keep_dist: float = 240.0
@@ -126,6 +127,37 @@ func apply_kind(new_kind: String, mods: Dictionary) -> void:
 		view_range = 250.0
 		view_half_angle = 0.8
 		coin_value *= 3
+	elif kind == "shield":
+		max_health = 75
+		contact_damage = 16
+		patrol_speed = 48.0
+		suspect_speed = 78.0
+		chase_speed = 125.0
+		view_range = 250.0
+		view_half_angle = 0.75
+		coin_value *= 2
+	elif kind == "blinder":
+		ranged = true
+		max_health = 30
+		contact_damage = 8
+		patrol_speed = 60.0
+		suspect_speed = 90.0
+		chase_speed = 140.0
+		view_range = 330.0
+		view_half_angle = 0.6
+		shot_damage = 6
+		shoot_cd = 2.2
+		blind_time = 2.5
+		coin_value = int(round(float(coin_value) * 1.5))
+	elif kind == "hound":
+		max_health = 18
+		contact_damage = 10
+		patrol_speed = 130.0
+		suspect_speed = 175.0
+		chase_speed = 255.0
+		view_range = 380.0
+		view_half_angle = 0.7
+		coin_value = int(round(float(coin_value) * 0.8))
 	elif kind == "flyer":
 		flies = true
 		max_health = 14
@@ -176,6 +208,10 @@ func _ready() -> void:
 		art.scale = Vector2(1.3, 1.3)
 	elif kind == "archer":
 		art.scale = Vector2(0.92, 0.92)
+	elif kind == "shield":
+		art.scale = Vector2(1.15, 1.15)
+	elif kind == "hound":
+		art.scale = Vector2(0.9, 0.9)
 
 	_player = get_tree().get_first_node_in_group("player") as Node2D
 	if waypoints.size() > 0:
@@ -198,7 +234,7 @@ func _can_see_player() -> bool:
 	var to: Vector2 = _player.global_position - global_position
 	var dist: float = to.length()
 	var rng: float = view_range
-	if bool(_player.is_sneaking):
+	if bool(_player.is_sneaking) and kind != "hound":   # hounds sniff out sneaking players
 		rng *= 0.55
 	var half: float = view_half_angle
 	if state == S.CHASE:
@@ -392,6 +428,7 @@ func _fire(angle: float, speed: float, dmg: int) -> void:
 	p.damage = dmg
 	p.position = global_position + Vector2.from_angle(angle) * 26.0
 	p.color = art.eye_color()
+	p.blind = blind_time
 	get_tree().current_scene.add_child(p)
 	Audio.play("click", -8.0, 0.15)
 
@@ -414,6 +451,16 @@ func _start_chase() -> void:
 		if e != self and e.has_method("hear_alert") \
 				and global_position.distance_to(e.global_position) < 430.0:
 			e.hear_alert(_player.global_position)
+
+
+## A thrown decoy rattled nearby: walk over and check the spot (not a full alarm).
+func hear_noise(pos: Vector2) -> void:
+	if state == S.DEAD or state == S.CHASE:
+		return
+	_last_known = pos
+	awareness = maxf(awareness, 0.6)
+	state = S.SUSPECT
+	_suspect_timer = 4.0
 
 
 ## Another guard shouted: go and look where the player was.
@@ -453,6 +500,8 @@ func _draw() -> void:
 		if state == S.SUSPECT:
 			col = Color(1.0, 0.7, 0.2, 0.2)
 		draw_colored_polygon(_cone, col)
+	if kind == "shield":
+		draw_arc(Vector2.ZERO, 24.0, facing_angle - 1.1, facing_angle + 1.1, 14, Color(0.7, 0.75, 0.85, 0.9), 4.0)
 	if kind == "archer":
 		var bd: Vector2 = Vector2.from_angle(facing_angle)
 		draw_arc(bd * 20.0, 17.0, facing_angle - 1.0, facing_angle + 1.0, 10, Color(0.75, 0.6, 0.35), 3.0)
@@ -499,6 +548,14 @@ func backstab(from_pos: Vector2) -> void:
 func take_damage(amount: int, from_position: Vector2, knockback_force: float) -> void:
 	if _dying:
 		return
+	# Shieldbearers block anything coming from the front. Hit them from the side or behind.
+	if kind == "shield" and absf(angle_difference(facing_angle, (from_position - global_position).angle())) < 1.1:
+		if Progression.has_perk("shield_breaker"):
+			amount = maxi(1, int(amount / 2))
+		else:
+			Audio.play("click", -4.0, 0.2)
+			Fx.burst(get_tree().current_scene, global_position, Color(1.6, 1.6, 1.8), 6, 200.0, 0.2, 2.0, 30.0, (global_position - from_position).normalized(), true)
+			return
 	health -= amount
 	var dir: Vector2 = (global_position - from_position).normalized()
 	_knockback = dir * knockback_force
