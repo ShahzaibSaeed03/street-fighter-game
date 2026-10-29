@@ -123,6 +123,17 @@ func room_at(pos: Vector2) -> String:
 	return _by_cell.get(c, "")
 
 
+## Bounding box of every room - the follow camera never scrolls past it.
+func world_bounds() -> Rect2:
+	var lo := Vector2(INF, INF)
+	var hi := Vector2(-INF, -INF)
+	for id in _cells:
+		var o: Vector2 = origin_of(id)
+		lo = lo.min(o)
+		hi = hi.max(o + Vector2(RW, RH))
+	return Rect2(lo, hi - lo)
+
+
 func level_data() -> Dictionary:
 	return _lv
 

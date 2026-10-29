@@ -19,6 +19,7 @@ static var pending_perks: int = 0
 static var perks: Array = []
 static var challenges_done: Array = []
 static var bosses: int = 0
+static var speed_pref: int = 1                  # 0 slow, 1 normal, 2 fast (see Tuning.gd)
 
 
 static func ensure() -> void:
@@ -30,6 +31,7 @@ static func ensure() -> void:
 		return
 	coins = int(cfg.get_value("save", "coins", 0))
 	unlocked = int(cfg.get_value("save", "unlocked", 0))
+	speed_pref = clampi(int(cfg.get_value("save", "speed_pref", 1)), 0, 2)
 	vitality = int(cfg.get_value("save", "vitality", 0))
 	var b: Variant = cfg.get_value("save", "best", {})
 	if b is Dictionary:
@@ -70,6 +72,7 @@ static func save() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("save", "coins", coins)
 	cfg.set_value("save", "unlocked", unlocked)
+	cfg.set_value("save", "speed_pref", speed_pref)
 	cfg.set_value("save", "vitality", vitality)
 	cfg.set_value("save", "best", best)
 	cfg.set_value("save", "mstats", mstats)

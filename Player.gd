@@ -48,6 +48,10 @@ var max_ammo: int = 0
 var arrow_mult: float = 1.0
 var _shoot_timer: float = 0.0
 var _reticle: Node2D
+var _auto_target: Node2D = null      # touch aim assist: the enemy the bow would hit right now
+var _assist_timer: float = 0.0
+const ASSIST_RANGE := 680.0
+const ASSIST_CONE := 0.5             # radians (about 29 degrees) the aim stick may be off and still lock on
 var _noise_boost: float = 0.0
 var _moving: bool = false
 
@@ -123,9 +127,28 @@ func add_ammo(n: int) -> int:
 func _draw_reticle() -> void:
 	if is_dead:
 		return
-	var m: Vector2 = get_global_mouse_position()
 	_reticle.global_position = Vector2.ZERO
 	var col := Color(1.0, 0.9, 0.5, 0.75) if ammo > 0 else Color(1.0, 0.3, 0.3, 0.6)
+	if _touch_mode():
+		# Touch: a dashed aim line while the stick is held, and a ring on the enemy that will be hit.
+		var tp: Vector2 = Vector2.ZERO
+		var has_t: bool = is_instance_valid(_auto_target)
+		if has_t:
+			tp = _auto_target.global_position
+		if TouchControls.aim_active:
+			var end: Vector2 = tp if has_t else global_position + TouchControls.aim_dir * 260.0
+			var seg: Vector2 = end - global_position
+			var n: int = int(seg.length() / 22.0)
+			for i in n:
+				var a: Vector2 = global_position + seg.normalized() * (30.0 + float(i) * 22.0)
+				_reticle.draw_line(a, a + seg.normalized() * 11.0, Color(col, 0.55), 2.2)
+		if has_t and ammo > 0:
+			var pulse: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.008)
+			_reticle.draw_arc(tp, 24.0 + pulse * 3.0, 0.0, TAU, 28, Color(1.0, 0.35, 0.3, 0.9), 2.4)
+			_reticle.draw_arc(tp, 13.0, 0.0, TAU, 20, Color(1.0, 0.8, 0.4, 0.8), 1.6)
+			_reticle.draw_circle(tp, 2.4, Color(1.0, 0.85, 0.5, 0.95))
+		return
+	var m: Vector2 = get_global_mouse_position()
 	_reticle.draw_arc(m, 11.0, 0.0, TAU, 20, col, 1.6)
 	_reticle.draw_circle(m, 1.8, col)
 	var d: Vector2 = (m - global_position)
@@ -151,21 +174,26 @@ func _physics_process(delta: float) -> void:
 		if _swing_time >= SWING_TIME:
 			_swing_time = -1.0
 
+	_assist_timer -= delta
+	if _assist_timer <= 0.0 or TouchControls.aim_active:
+		_assist_timer = 0.08
+		_update_assist()
 	var input_dir := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	if input_dir != Vector2.ZERO:
 		facing = input_dir.normalized()
 
 	if is_dodging:
 		_dodge_time_left -= delta
-		velocity = _dodge_dir * dodge_speed
+		velocity = _dodge_dir * dodge_speed * Tuning.dodge_scale()
 		if _dodge_time_left <= 0.0:
 			_end_dodge()
 	else:
 		is_sneaking = Input.is_action_pressed("sneak")
 		var spd_k: float = speed_mult * (0.45 if slow_timer > 0.0 else 1.0) * (0.6 if blind_timer > 0.0 else 1.0)
-		velocity = input_dir * (sneak_speed if is_sneaking else speed) * spd_k
+		velocity = input_dir * (sneak_speed if is_sneaking else speed) * spd_k * Tuning.move_scale()
 		# Decoy: E key, or the DECOY button on touch screens (edge-triggered)
 		var decoy_now: bool = Input.is_key_pressed(KEY_E) or TouchControls.consume_decoy()
+		var aim_fire: bool = TouchControls.aim_fire and _shoot_timer <= 0.0
 		if decoy_now and not _decoy_was_down and decoys > 0:
 			_throw_decoy(input_dir)
 		_decoy_was_down = decoy_now
@@ -173,8 +201,10 @@ func _physics_process(delta: float) -> void:
 			_start_dodge(input_dir)
 		elif Input.is_action_pressed("attack") and _attack_timer <= 0.0:
 			_attack()
-		elif Input.is_action_pressed("shoot") and _shoot_timer <= 0.0:
-			_shoot()
+		elif (Input.is_action_pressed("shoot") or aim_fire) and _shoot_timer <= 0.0:
+			if aim_fire:
+				TouchControls.aim_fire = false
+			_shoot(aim_fire)
 
 	move_and_slide()
 	_moving = input_dir != Vector2.ZERO
@@ -189,7 +219,7 @@ func _physics_process(delta: float) -> void:
 
 	# Feed the animation
 	art.aim_angle = facing.angle()
-	art.move_amount = 0.0 if is_dodging else clampf(velocity.length() / speed, 0.0, 1.0)
+	art.move_amount = 0.0 if is_dodging else clampf(velocity.length() / (speed * Tuning.move_scale()), 0.0, 1.0)
 	art.dodging = is_dodging
 	art.scale = Vector2(0.9, 0.9) if is_sneaking else Vector2.ONE
 	art.attack_progress = (_swing_time / SWING_TIME) if _swing_time >= 0.0 else -1.0
@@ -240,7 +270,7 @@ func _attack() -> void:
 
 
 # ---------- Bow ----------
-func _shoot() -> void:
+func _shoot(from_stick: bool = false) -> void:
 	if blind_timer > 0.0:
 		return
 	if ammo <= 0:
@@ -249,9 +279,7 @@ func _shoot() -> void:
 		return
 	ammo -= 1
 	_shoot_timer = float(bow["cd"])
-	# Touch aim stick wins when it is held; otherwise aim at the mouse as before.
-	var aim: Vector2 = TouchControls.aim_dir * 100.0 if TouchControls.aim_active else get_global_mouse_position() - global_position
-	var dir: Vector2 = aim.normalized() if aim.length() > 26.0 else facing
+	var dir: Vector2 = _shot_dir(from_stick)
 	facing = dir
 	var a = ArrowScript.new()
 	a.velocity = dir * float(bow["speed"]) * (1.25 if Progression.has_perk("eagle_eye") else 1.0)
@@ -263,6 +291,77 @@ func _shoot() -> void:
 	art.bow_show = 0.3
 	_noise_boost = 0.3
 	Audio.play("swing", -6.0, 0.2)
+
+
+## Touch aiming. The aim stick points roughly and the game locks onto the enemy nearest to that
+## direction; the BOW button alone shoots at the nearest enemy it can see. Moving enemies are led.
+func _touch_mode() -> bool:
+	return TouchControls.is_touch or Tuning.FORCE_MOBILE
+
+
+func _shot_dir(from_stick: bool) -> Vector2:
+	if _touch_mode():
+		if from_stick or TouchControls.aim_active:
+			var t: Node2D = _pick_target(TouchControls.aim_dir, ASSIST_CONE, ASSIST_RANGE)
+			if t != null:
+				return _lead_dir(t)
+			return TouchControls.aim_dir
+		var t2: Node2D = _pick_target(facing, PI, ASSIST_RANGE)
+		if t2 != null:
+			return _lead_dir(t2)
+		return facing
+	var aim: Vector2 = get_global_mouse_position() - global_position
+	return aim.normalized() if aim.length() > 26.0 else facing
+
+
+func _los_clear(to: Vector2) -> bool:
+	var q := PhysicsRayQueryParameters2D.create(global_position, to, 12)
+	return get_world_2d().direct_space_state.intersect_ray(q).is_empty()
+
+
+## Best enemy for the shot: inside the cone, in range, in line of sight. Aligned beats close.
+func _pick_target(dir: Vector2, cone: float, max_range: float) -> Node2D:
+	var best: Node2D = null
+	var best_score: float = INF
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(e) or int(e.get("state")) == 3:
+			continue
+		var to: Vector2 = e.global_position - global_position
+		var d: float = to.length()
+		if d > max_range or d < 1.0:
+			continue
+		var ad: float = absf(angle_difference(dir.angle(), to.angle()))
+		if ad > cone:
+			continue
+		var score: float = ad * (400.0 if cone < PI else 90.0) + d * 0.35
+		if score >= best_score:
+			continue
+		if not _los_clear(e.global_position):
+			continue
+		best_score = score
+		best = e
+	return best
+
+
+func _lead_dir(t: Node2D) -> Vector2:
+	var spd: float = float(bow["speed"]) * (1.25 if Progression.has_perk("eagle_eye") else 1.0)
+	var to: Vector2 = t.global_position - global_position
+	var v: Vector2 = Vector2.ZERO
+	if t is CharacterBody2D:
+		v = (t as CharacterBody2D).velocity
+	var aim_pt: Vector2 = to + v * (to.length() / maxf(spd, 1.0)) * 0.9
+	return aim_pt.normalized() if aim_pt.length() > 1.0 else facing
+
+
+func _update_assist() -> void:
+	if is_dead or not _touch_mode():
+		_auto_target = null
+	elif TouchControls.aim_active:
+		_auto_target = _pick_target(TouchControls.aim_dir, ASSIST_CONE, ASSIST_RANGE)
+	else:
+		_auto_target = _pick_target(facing, PI, ASSIST_RANGE)
+	if _reticle != null:
+		_reticle.queue_redraw()
 
 
 # ---------- Decoy ----------

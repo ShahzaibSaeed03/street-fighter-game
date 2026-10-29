@@ -20,6 +20,28 @@ const FIXED: Dictionary = {
 		"eye": Color(2.0, 0.9, 0.2), "blood": Color(0.6, 0.12, 0.1)},
 }
 
+## Skeletons and ghosts change colour with the level tier: bone / ember / frost / void.
+const SKELETON_PALS: Array[Dictionary] = [
+	{"skin": Color(0.86, 0.84, 0.74), "dark": Color(0.26, 0.24, 0.20), "accent": Color(0.62, 0.58, 0.48),
+		"eye": Color(0.5, 1.9, 0.7), "blood": Color(0.85, 0.82, 0.68)},
+	{"skin": Color(0.82, 0.72, 0.60), "dark": Color(0.32, 0.17, 0.10), "accent": Color(0.95, 0.55, 0.20),
+		"eye": Color(2.0, 0.9, 0.2), "blood": Color(0.95, 0.50, 0.15)},
+	{"skin": Color(0.82, 0.92, 0.98), "dark": Color(0.18, 0.28, 0.40), "accent": Color(0.55, 0.80, 1.00),
+		"eye": Color(0.6, 1.7, 2.2), "blood": Color(0.60, 0.85, 1.00)},
+	{"skin": Color(0.76, 0.68, 0.86), "dark": Color(0.20, 0.10, 0.30), "accent": Color(0.85, 0.40, 1.00),
+		"eye": Color(2.0, 0.5, 1.7), "blood": Color(0.80, 0.35, 0.95)},
+]
+const GHOST_PALS: Array[Dictionary] = [
+	{"skin": Color(0.88, 0.95, 0.92), "dark": Color(0.30, 0.45, 0.42), "accent": Color(0.55, 1.00, 0.85),
+		"eye": Color(0.5, 2.0, 1.4), "blood": Color(0.6, 1.0, 0.85)},
+	{"skin": Color(1.00, 0.88, 0.75), "dark": Color(0.55, 0.25, 0.10), "accent": Color(1.00, 0.55, 0.20),
+		"eye": Color(2.0, 0.9, 0.2), "blood": Color(1.0, 0.6, 0.25)},
+	{"skin": Color(0.88, 0.95, 1.00), "dark": Color(0.25, 0.40, 0.60), "accent": Color(0.55, 0.85, 1.00),
+		"eye": Color(0.6, 1.7, 2.3), "blood": Color(0.65, 0.88, 1.0)},
+	{"skin": Color(0.90, 0.80, 1.00), "dark": Color(0.35, 0.18, 0.50), "accent": Color(0.85, 0.45, 1.00),
+		"eye": Color(2.0, 0.5, 1.8), "blood": Color(0.85, 0.45, 1.0)},
+]
+
 var species: String = "bat"
 var tier: int = 0
 var aim_angle: float = 0.0
@@ -33,7 +55,11 @@ var _pal: Dictionary = {}
 
 func setup(new_tier: int) -> void:
 	tier = new_tier % 4
-	if FIXED.has(species):
+	if species == "skeleton":
+		_pal = SKELETON_PALS[tier]
+	elif species == "ghost":
+		_pal = GHOST_PALS[tier]
+	elif FIXED.has(species):
 		_pal = FIXED[species]
 	else:
 		_pal = EnemyArtScript.PALETTES[tier]
@@ -70,7 +96,7 @@ func _ellipse(center: Vector2, rx: float, ry: float, color: Color, segs: int = 1
 
 
 func _is_flyer() -> bool:
-	return species == "bat" or species == "wasp" or species == "vulture" or species == "wraith"
+	return species == "bat" or species == "wasp" or species == "vulture" or species == "wraith" or species == "ghost"
 
 
 func _draw() -> void:
@@ -99,6 +125,10 @@ func _draw() -> void:
 			_draw_golem()
 		"wraith":
 			_draw_wraith()
+		"skeleton":
+			_draw_skeleton()
+		"ghost":
+			_draw_ghost()
 		"hound":
 			_draw_hound()
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -278,6 +308,105 @@ func _draw_golem() -> void:
 	draw_rect(Rect2(5.0, -7.0, 11.0, 14.0), dark)
 	draw_rect(Rect2(6.5, -5.5, 8.0, 11.0), skin)
 	draw_rect(Rect2(12.0, -3.0, 3.5, 6.0), _pal["eye"])
+
+
+## Skeleton: walks on bone legs, ribcage and spine, arms reaching forward, glowing eyes in the skull.
+func _draw_skeleton() -> void:
+	var bone: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var eye: Color = _pal["eye"]
+	var s: float = sin(_walk)
+	# legs
+	for side in [-1.0, 1.0]:
+		var sd: float = side
+		var step: float = s * 6.5 * sd
+		var hip := Vector2(-3.0, 4.0 * sd)
+		var knee := Vector2(step * 0.6, 7.0 * sd)
+		var foot := Vector2(step * 1.5, 10.5 * sd)
+		draw_line(hip, knee, dark, 5.2)
+		draw_line(knee, foot, dark, 5.2)
+		draw_line(hip, knee, bone, 3.0)
+		draw_line(knee, foot, bone, 3.0)
+		draw_circle(knee, 2.3, bone)
+		draw_circle(foot, 2.8, bone)
+	# ribcage + spine
+	_ellipse(Vector2.ZERO, 12.5, 13.5, dark)
+	_ellipse(Vector2.ZERO, 10.8, 11.8, Color(dark.r * 0.55, dark.g * 0.55, dark.b * 0.55))
+	for i in 5:
+		var x: float = -7.0 + float(i) * 3.6
+		var w: float = 11.0 - absf(float(i) - 2.0) * 1.6
+		draw_line(Vector2(x, -w), Vector2(x + 1.2, w), dark, 3.6)
+		draw_line(Vector2(x, -w), Vector2(x + 1.2, w), bone, 2.0)
+	draw_line(Vector2(-10.0, 0.0), Vector2(10.0, 0.0), dark, 4.2)
+	draw_line(Vector2(-10.0, 0.0), Vector2(10.0, 0.0), bone, 2.4)
+	# arms
+	for side in [-1.0, 1.0]:
+		var sd2: float = side
+		var shoulder := Vector2(4.0, 12.0 * sd2)
+		var elbow := Vector2(13.0 + s * 3.0 * sd2, 15.5 * sd2)
+		var hand := Vector2(23.0 - s * 3.0 * sd2, 9.0 * sd2)
+		draw_line(shoulder, elbow, dark, 5.2)
+		draw_line(elbow, hand, dark, 5.2)
+		draw_line(shoulder, elbow, bone, 2.8)
+		draw_line(elbow, hand, bone, 2.8)
+		draw_circle(elbow, 2.3, bone)
+		for f in 3:
+			var fa: float = (float(f) - 1.0) * 0.42
+			draw_line(hand, hand + Vector2.from_angle(fa) * 6.5, bone, 1.5)
+	# skull
+	var hp := Vector2(13.0, 0.0)
+	draw_circle(hp, 9.6, dark)
+	draw_circle(hp, 8.3, bone)
+	draw_circle(hp + Vector2(-2.0, -2.5), 3.4, Color(1, 1, 1, 0.2))
+	_ellipse(hp + Vector2(6.5, 0.0), 3.9, 5.0, dark)
+	_ellipse(hp + Vector2(6.5, 0.0), 3.0, 4.2, bone.darkened(0.12))
+	for t in 4:
+		var ty: float = -3.0 + float(t) * 2.0
+		draw_line(hp + Vector2(5.2, ty), hp + Vector2(8.6, ty), dark, 0.9)
+	for side in [-1.0, 1.0]:
+		var sd3: float = side
+		var ep := hp + Vector2(3.0, 3.7 * sd3)
+		draw_circle(ep, 3.1, Color(0.03, 0.02, 0.03))
+		draw_circle(ep, 1.6, Color(eye.r, eye.g, eye.b, 0.95))
+	draw_colored_polygon(PackedVector2Array([hp + Vector2(6.5, -1.1), hp + Vector2(6.5, 1.1), hp + Vector2(8.8, 0.0)]), Color(0.08, 0.06, 0.06))
+
+
+## Ghost: a floating, see-through sheet with a wavy hem, raised arms, hollow eyes and an open mouth.
+func _draw_ghost() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	var eye: Color = _pal["eye"]
+	var fade: float = 0.74 + sin(_time * 2.3) * 0.14
+	draw_circle(Vector2(-5.0, 0.0), 24.0, Color(acc.r, acc.g, acc.b, 0.09))
+	draw_circle(Vector2(0.0, 0.0), 17.0, Color(acc.r, acc.g, acc.b, 0.12))
+	var pts := PackedVector2Array()
+	for i in 9:
+		var a: float = -PI * 0.5 + PI * float(i) / 8.0
+		pts.append(Vector2(cos(a) * 12.5 + 3.0, sin(a) * 13.5))
+	for i in 6:
+		var f: float = float(i) / 5.0
+		pts.append(Vector2(2.0 - 24.0 * f + sin(_time * 4.0 + float(i) * 1.9) * 2.0, 13.0 - 7.0 * f + sin(_time * 3.0 + float(i) * 2.3) * 2.6))
+	pts.append(Vector2(-31.0 + sin(_time * 4.5) * 3.0, 0.0))
+	for i in 6:
+		var g: float = float(5 - i) / 5.0
+		pts.append(Vector2(2.0 - 24.0 * g + sin(_time * 4.2 + float(i) * 2.1) * 2.0, -13.0 + 7.0 * g + sin(_time * 3.3 + float(i) * 1.7) * 2.6))
+	draw_colored_polygon(pts, Color(dark.r, dark.g, dark.b, fade * 0.9))
+	var inner := PackedVector2Array()
+	for p in pts:
+		inner.append(p * 0.84)
+	draw_colored_polygon(inner, Color(skin.r, skin.g, skin.b, fade))
+	draw_circle(Vector2(5.0, -4.0), 6.0, Color(1, 1, 1, 0.16))
+	for s in [-1.0, 1.0]:
+		var sy: float = float(s)
+		var w: float = sin(_time * 3.4 + sy * 1.4) * 3.0
+		draw_polyline(PackedVector2Array([Vector2(4.0, 11.0 * sy), Vector2(12.0, 16.0 * sy + w), Vector2(20.0, 13.0 * sy + w * 1.5)]), Color(skin.r, skin.g, skin.b, fade), 3.6)
+		draw_circle(Vector2(20.0, 13.0 * sy + w * 1.5), 2.6, Color(skin.r, skin.g, skin.b, fade))
+	for s in [-1.0, 1.0]:
+		var sy2: float = float(s)
+		_ellipse(Vector2(10.0, 4.4 * sy2), 2.9, 3.9, Color(0.02, 0.03, 0.05, 0.95))
+		draw_circle(Vector2(10.8, 4.4 * sy2), 1.4, Color(eye.r, eye.g, eye.b, 1.0))
+	_ellipse(Vector2(15.5, 0.0), 2.4, 3.3, Color(0.02, 0.03, 0.05, 0.9))
 
 
 func _draw_wraith() -> void:

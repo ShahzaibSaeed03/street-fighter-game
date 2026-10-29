@@ -93,7 +93,7 @@ func apply_kind(new_kind: String, mods: Dictionary) -> void:
 	var hp_m: float = float(mods.get("hp", 1.0))
 	var dmg_m: float = float(mods.get("dmg", 1.0))
 	var view_m: float = float(mods.get("view", 1.0))
-	var spd_m: float = float(mods.get("spd", 1.0))
+	var spd_m: float = float(mods.get("spd", 1.0)) * Tuning.move_scale()
 	coin_value = int(mods.get("coin", 5))
 	var roster: Dictionary = mods.get("roster", {})
 	var entry: Array = roster.get(kind, ["ghoul", 0])

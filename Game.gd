@@ -27,6 +27,7 @@ var elapsed: float = 0.0
 var finished: bool = false
 
 var _ui: CanvasLayer
+var _ui_items: Array = []   # [node, design position, "c" centre / "r" right / "b" bottom]
 var _hp_label: Label
 var _hp_bar: ProgressBar
 var _dodge_bar: ProgressBar
@@ -98,6 +99,18 @@ func _ready() -> void:
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 6.0
 	add_child(camera)
+	camera.zoom = Vector2.ONE * Tuning.camera_zoom()
+	if Tuning.follow_camera():
+		# Phone: follow the hero instead of snapping room to room; stop at the dungeon edge.
+		var wb: Rect2 = dungeon.world_bounds()
+		camera.limit_left = int(wb.position.x)
+		camera.limit_top = int(wb.position.y)
+		camera.limit_right = int(wb.end.x)
+		camera.limit_bottom = int(wb.end.y)
+		camera.limit_smoothed = true
+		camera.position_smoothing_speed = 12.0
+		camera.position = player.global_position
+		camera.reset_smoothing()
 
 	_build_ui()
 	player.health_changed.connect(_on_health_changed)
@@ -137,7 +150,7 @@ func _setup_inputs() -> void:
 func _setup_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_CANVAS
-	env.glow_enabled = true
+	env.glow_enabled = not Tuning.mobile()   # glow + HDR 2D are too heavy for phones
 	env.glow_intensity = 0.9
 	env.glow_strength = 1.0
 	env.glow_bloom = 0.05
@@ -272,8 +285,44 @@ func _build_ui() -> void:
 	var help := _label(_ui, "WASD move   C sneak   SPACE / left click sword   F / right click bow   SHIFT roll   R restart   ESC menu", 13, Color(0.7, 0.7, 0.75))
 	help.position = Vector2(18, 622)
 
+	# The HUD was laid out for 1152x648. On a wider/taller screen keep it centred / on the edges.
+	_ui_items.clear()
+	_pin(_boss_label, "c")
+	_pin(_boss_bar, "c")
+	_pin(_objective, "c")
+	_pin(_room_label, "c")
+	_pin(mm, "r")
+	_pin(_hint, "cb")
+	_pin(_toast, "c")
+	_pin(_banner, "c")
+	_pin(help, "b")
+	help.visible = not Tuning.mobile()   # keyboard help is useless on a touch screen
+	get_viewport().size_changed.connect(_relayout_ui)
+	_relayout_ui()
+
 	_build_end_panel()
 	_refresh_objective()
+
+
+func _pin(n: Control, mode: String) -> void:
+	_ui_items.append([n, n.position, mode])
+
+
+func _relayout_ui() -> void:
+	var vs: Vector2 = get_viewport().get_visible_rect().size
+	var ex: float = vs.x - 1152.0
+	var ey: float = vs.y - 648.0
+	for it in _ui_items:
+		var n: Control = it[0]
+		var q: Vector2 = it[1]
+		var m: String = it[2]
+		if m.contains("c"):
+			q.x += ex * 0.5
+		if m.contains("r"):
+			q.x += ex
+		if m.contains("b"):
+			q.y += ey
+		n.position = q
 
 
 func _build_end_panel() -> void:
@@ -635,6 +684,8 @@ func _process(delta: float) -> void:
 	if room != "" and room != current_room:
 		_enter_room(room)
 	var target: Vector2 = dungeon.room_center(current_room)
+	if Tuning.follow_camera():
+		target = player.global_position
 	camera.position = target
 	if _shake_strength > 0.01:
 		camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * _shake_strength
