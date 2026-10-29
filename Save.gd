@@ -20,6 +20,18 @@ static var perks: Array = []
 static var challenges_done: Array = []
 static var bosses: int = 0
 static var speed_pref: int = 1                  # 0 slow, 1 normal, 2 fast (see Tuning.gd)
+static var player_name: String = ""             # the hero's name, asked once at the start ("" = not asked yet)
+
+
+## The hero's name as shown in the story and the HUD.
+static func hero_name() -> String:
+	ensure()
+	return player_name if player_name != "" else "Hero"
+
+
+static func set_hero_name(n: String) -> void:
+	player_name = n.strip_edges().substr(0, 14)
+	save()
 
 
 static func ensure() -> void:
@@ -33,6 +45,7 @@ static func ensure() -> void:
 	unlocked = int(cfg.get_value("save", "unlocked", 0))
 	speed_pref = clampi(int(cfg.get_value("save", "speed_pref", 1)), 0, 2)
 	vitality = int(cfg.get_value("save", "vitality", 0))
+	player_name = String(cfg.get_value("save", "player_name", ""))
 	var b: Variant = cfg.get_value("save", "best", {})
 	if b is Dictionary:
 		best = b
@@ -74,6 +87,7 @@ static func save() -> void:
 	cfg.set_value("save", "unlocked", unlocked)
 	cfg.set_value("save", "speed_pref", speed_pref)
 	cfg.set_value("save", "vitality", vitality)
+	cfg.set_value("save", "player_name", player_name)
 	cfg.set_value("save", "best", best)
 	cfg.set_value("save", "mstats", mstats)
 	cfg.set_value("save", "claimed", claimed)

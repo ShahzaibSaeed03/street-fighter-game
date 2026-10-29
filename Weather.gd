@@ -64,6 +64,68 @@ func configure(kind: String) -> void:
 			ramp.add_point(0.15, Color(1, 1, 1, 0.75))
 			ramp.set_color(1, Color(1, 1, 1, 0.0))
 			material = Fx.unshaded_material()
+		"ash":
+			amount = 90
+			lifetime = 7.0
+			direction = Vector2(0.3, 1.0)
+			spread = 20.0
+			initial_velocity_min = 14.0
+			initial_velocity_max = 40.0
+			scale_amount_min = 1.2
+			scale_amount_max = 2.8
+			ramp.set_color(0, Color(0.7, 0.68, 0.66, 0.0))
+			ramp.add_point(0.2, Color(0.7, 0.68, 0.66, 0.5))
+			ramp.set_color(1, Color(0.7, 0.68, 0.66, 0.0))
+			material = Fx.unshaded_material()
+		"spores":
+			amount = 55
+			lifetime = 8.0
+			initial_velocity_min = 4.0
+			initial_velocity_max = 16.0
+			gravity = Vector2(0.0, -3.0)
+			scale_amount_min = 1.6
+			scale_amount_max = 3.6
+			ramp.set_color(0, Color(0.6, 1.6, 0.5, 0.0))
+			ramp.add_point(0.4, Color(0.6, 1.6, 0.5, 0.7))
+			ramp.set_color(1, Color(0.6, 1.6, 0.5, 0.0))
+			material = Fx.glow_material()
+		"sparks":
+			amount = 60
+			lifetime = 1.6
+			initial_velocity_min = 80.0
+			initial_velocity_max = 200.0
+			gravity = Vector2(0.0, 120.0)
+			scale_amount_min = 1.0
+			scale_amount_max = 2.4
+			ramp.set_color(0, Color(2.4, 1.6, 0.5, 1.0))
+			ramp.set_color(1, Color(1.6, 0.4, 0.1, 0.0))
+			material = Fx.glow_material()
+		"bubbles":
+			amount = 50
+			lifetime = 6.0
+			direction = Vector2(0.0, -1.0)
+			spread = 12.0
+			initial_velocity_min = 20.0
+			initial_velocity_max = 50.0
+			scale_amount_min = 1.6
+			scale_amount_max = 4.0
+			ramp.set_color(0, Color(0.6, 1.3, 1.7, 0.0))
+			ramp.add_point(0.3, Color(0.6, 1.3, 1.7, 0.6))
+			ramp.set_color(1, Color(0.6, 1.3, 1.7, 0.0))
+			material = Fx.glow_material()
+		"petals":
+			amount = 45
+			lifetime = 7.0
+			direction = Vector2(0.4, 1.0)
+			spread = 25.0
+			initial_velocity_min = 15.0
+			initial_velocity_max = 40.0
+			scale_amount_min = 2.0
+			scale_amount_max = 3.6
+			ramp.set_color(0, Color(1.0, 0.7, 0.8, 0.0))
+			ramp.add_point(0.2, Color(1.0, 0.7, 0.8, 0.8))
+			ramp.set_color(1, Color(1.0, 0.7, 0.8, 0.0))
+			material = Fx.unshaded_material()
 		"motes":
 			amount = 50
 			lifetime = 8.0

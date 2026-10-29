@@ -39,6 +39,17 @@ var keys: Array[String] = []
 var dmg_taken_mult: float = 1.0
 var speed_mult: float = 1.0
 var noise_mult: float = 1.0
+var suit_ability: String = ""       # special suit power (see Items.gd: "veil")
+var _haste: float = 0.0             # power-up: seconds of extra speed left
+var _quiet: float = 0.0             # power-up: seconds of quiet steps left
+
+
+## Called by a PowerUp pickup.
+func grant_powerup(kind: String) -> void:
+	if kind == "haste":
+		_haste = 6.0
+	elif kind == "quiet":
+		_quiet = 8.0
 var slow_timer: float = 0.0          # >0 while stuck in quicksand
 var blind_timer: float = 0.0         # >0 after a blinder's flash: slower, no bow
 var invulnerable: float = 0.0        # >0 right after a revive: ignores damage
@@ -110,6 +121,7 @@ func _apply_loadout() -> void:
 	dmg_taken_mult = float(suit["dmg"]) * float(hero["dmg"])
 	speed_mult = float(suit["spd"]) * float(hero["speed"])
 	noise_mult = float(suit["noise"])
+	suit_ability = String(suit.get("ability", ""))
 	max_health = 100 + ItemsScript.VITALITY_HP * int(SaveScript.vitality) + int(hero["hp"])
 	max_ammo = int(bow["ammo"]) + int(hero["arrows"])
 	arrow_mult = float(hero["arrow_mult"])
@@ -167,6 +179,8 @@ func _physics_process(delta: float) -> void:
 
 	# Tick timers
 	_noise_boost = maxf(_noise_boost - delta, 0.0)
+	_haste = maxf(_haste - delta, 0.0)
+	_quiet = maxf(_quiet - delta, 0.0)
 	_attack_timer = maxf(_attack_timer - delta, 0.0)
 	_dodge_cd_timer = maxf(_dodge_cd_timer - delta, 0.0)
 	if _swing_time >= 0.0:
@@ -190,7 +204,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		is_sneaking = Input.is_action_pressed("sneak")
 		var spd_k: float = speed_mult * (0.45 if slow_timer > 0.0 else 1.0) * (0.6 if blind_timer > 0.0 else 1.0)
-		velocity = input_dir * (sneak_speed if is_sneaking else speed) * spd_k * Tuning.move_scale()
+		velocity = input_dir * (sneak_speed if is_sneaking else speed) * spd_k * Tuning.move_scale() * (1.5 if _haste > 0.0 else 1.0)
 		# Decoy: E key, or the DECOY button on touch screens (edge-triggered)
 		var decoy_now: bool = Input.is_key_pressed(KEY_E) or TouchControls.consume_decoy()
 		var aim_fire: bool = TouchControls.aim_fire and _shoot_timer <= 0.0
@@ -395,6 +409,11 @@ func _end_dodge() -> void:
 
 
 ## How far guards can HEAR the player right now (pixels).
+## How close a guard must be to see you while you stand in a curtain. Veil cloak: only touching range.
+func curtain_reach() -> float:
+	return 22.0 if suit_ability == "veil" else 70.0
+
+
 func noise_radius() -> float:
 	if is_dead:
 		return 0.0
@@ -407,7 +426,7 @@ func noise_radius() -> float:
 		r = maxf(r, 230.0)
 	if Progression.has_perk("light_feet"):
 		r *= 0.75
-	return r * noise_mult
+	return r * noise_mult * (0.5 if _quiet > 0.0 else 1.0)
 
 
 ## 0..1, how recharged the dodge roll is (1 = ready). Used by the HUD bar.

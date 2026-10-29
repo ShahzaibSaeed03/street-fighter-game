@@ -29,7 +29,11 @@ var _toast: Label
 var _level_page: int = 0
 var _page_label: Label
 var _speed_btns: Array[Button] = []
-const PER_PAGE := 6
+const PER_PAGE := 5   # one world (5 levels) per page
+const DEV_UNLOCK_ALL := false  # set to true while testing to make every level playable
+var _welcome: Label
+var _world_label: Label
+var _name_overlay: Control
 var _toast_tween: Tween
 var _t: float = 0.0
 var _embers: Array[Dictionary] = []
@@ -68,66 +72,50 @@ class Card extends Control:
 
 	func _icon(c: Vector2) -> void:
 		var col: Color = info["banner"]
-		match idx:
-			0:  # dungeon: torch
-				draw_rect(Rect2(c + Vector2(-4, -6), Vector2(8, 34)), Color(0.35, 0.22, 0.12))
-				draw_circle(c + Vector2(0, -14), 14.0, Color(1.0, 0.45, 0.1, 0.9))
-				draw_circle(c + Vector2(0, -16), 8.0, Color(1.0, 0.85, 0.4))
-			1:  # jungle: tree
-				draw_rect(Rect2(c + Vector2(-4, 4), Vector2(8, 26)), Color(0.35, 0.22, 0.12))
-				draw_circle(c + Vector2(0, -8), 24.0, Color(0.14, 0.45, 0.16))
-				draw_circle(c + Vector2(-8, -14), 14.0, Color(0.3, 0.65, 0.25))
-			2:  # desert: pyramid + sun
-				draw_circle(c + Vector2(22, -22), 11.0, Color(1.0, 0.85, 0.4))
-				draw_colored_polygon(PackedVector2Array([c + Vector2(-34, 30), c + Vector2(0, -22), c + Vector2(34, 30)]), Color(0.78, 0.6, 0.32))
-				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -22), c + Vector2(34, 30), c + Vector2(6, 30)]), Color(0.6, 0.44, 0.22))
-			3:  # lava: flame
+		match int(info.get("world", 0)):
+			0:  # Emberfall: flame
 				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -34), c + Vector2(20, 0), c + Vector2(14, 28), c + Vector2(-14, 28), c + Vector2(-20, 0)]), Color(1.0, 0.4, 0.1))
 				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -12), c + Vector2(10, 8), c + Vector2(6, 26), c + Vector2(-6, 26), c + Vector2(-10, 8)]), Color(1.0, 0.85, 0.35))
-			4:  # ice: crystal
-				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -36), c + Vector2(20, -4), c + Vector2(0, 32), c + Vector2(-20, -4)]), Color(0.55, 0.82, 1.0))
-				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -36), c + Vector2(6, -4), c + Vector2(0, 32), c + Vector2(-20, -4)]), Color(0.85, 0.96, 1.0))
-			5:  # shadow: moon
-				draw_circle(c, 28.0, Color(0.75, 0.45, 1.0))
-				draw_circle(c + Vector2(12, -6), 24.0, Color(0.12, 0.08, 0.2))
-			6:  # bone crypt: skull
-				var bone := Color(0.88, 0.86, 0.76)
-				draw_circle(c + Vector2(0, -4), 22.0, bone)
-				draw_rect(Rect2(c + Vector2(-12, 12), Vector2(24, 15)), bone)
-				draw_circle(c + Vector2(-8, -3), 6.5, Color(0.08, 0.06, 0.06))
-				draw_circle(c + Vector2(8, -3), 6.5, Color(0.08, 0.06, 0.06))
-				draw_colored_polygon(PackedVector2Array([c + Vector2(0, 4), c + Vector2(-3, 11), c + Vector2(3, 11)]), Color(0.08, 0.06, 0.06))
-				for i in 4:
-					draw_line(c + Vector2(-9 + i * 6, 17), c + Vector2(-9 + i * 6, 26), Color(0.3, 0.28, 0.24), 1.5)
-			7:  # haunted manor: ghost
-				var gc := Color(0.85, 0.95, 1.0, 0.95)
-				draw_circle(c + Vector2(0, -8), 20.0, gc)
-				draw_rect(Rect2(c + Vector2(-20, -8), Vector2(40, 30)), gc)
-				for i in 4:
-					draw_circle(c + Vector2(-15 + i * 10, 22), 5.5, gc)
-				draw_circle(c + Vector2(-7, -9), 4.5, Color(0.05, 0.08, 0.15))
-				draw_circle(c + Vector2(7, -9), 4.5, Color(0.05, 0.08, 0.15))
-				draw_circle(c + Vector2(0, 3), 3.5, Color(0.05, 0.08, 0.15))
-			8:  # sunken temple: pillars over water
-				var sc := Color(0.55, 0.8, 0.75)
-				draw_rect(Rect2(c + Vector2(-26, -26), Vector2(12, 40)), sc)
-				draw_rect(Rect2(c + Vector2(14, -26), Vector2(12, 40)), sc)
-				draw_rect(Rect2(c + Vector2(-30, -32), Vector2(60, 8)), sc.lightened(0.15))
+			1:  # Whispering Mire: mushroom
+				draw_rect(Rect2(c + Vector2(-7, 2), Vector2(14, 28)), Color(0.9, 0.85, 0.7))
+				draw_circle(c + Vector2(0, 0), 26.0, Color(0.5, 0.25, 0.6))
+				draw_rect(Rect2(c + Vector2(-30, 0), Vector2(60, 30)), Color(0.12, 0.2, 0.18))
+				draw_circle(c + Vector2(-10, -10), 5.0, Color(0.95, 0.92, 0.75))
+				draw_circle(c + Vector2(8, -14), 4.0, Color(0.95, 0.92, 0.75))
+				draw_circle(c + Vector2(12, -2), 3.0, Color(0.95, 0.92, 0.75))
+			2:  # Crystal Deep: crystal
+				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -36), c + Vector2(20, -4), c + Vector2(0, 32), c + Vector2(-20, -4)]), Color(0.65, 0.45, 1.0))
+				draw_colored_polygon(PackedVector2Array([c + Vector2(0, -36), c + Vector2(6, -4), c + Vector2(0, 32), c + Vector2(-20, -4)]), Color(0.92, 0.85, 1.0))
+			3:  # Clockwork Citadel: gear
+				for i in 8:
+					var ga: float = TAU * float(i) / 8.0
+					draw_line(c + Vector2.from_angle(ga) * 20.0, c + Vector2.from_angle(ga) * 32.0, Color(0.85, 0.65, 0.25), 9.0)
+				draw_circle(c, 24.0, Color(0.85, 0.65, 0.25))
+				draw_circle(c, 10.0, Color(0.15, 0.1, 0.06))
+			4:  # Coral Abyss: coral branches
+				var cc := Color(0.95, 0.45, 0.5)
+				draw_line(c + Vector2(0, 30), c + Vector2(0, -6), cc, 7.0)
+				draw_line(c + Vector2(0, 14), c + Vector2(-20, -10), cc, 6.0)
+				draw_line(c + Vector2(0, 6), c + Vector2(22, -16), cc, 6.0)
+				draw_line(c + Vector2(-20, -10), c + Vector2(-26, -26), cc, 5.0)
+				draw_line(c + Vector2(22, -16), c + Vector2(18, -32), cc, 5.0)
+				for p in [Vector2(0, -10), Vector2(-26, -28), Vector2(18, -34)]:
+					draw_circle(c + p, 5.0, Color(1.0, 0.8, 0.7))
+			5:  # Frostpeak: snowflake
 				for i in 3:
-					draw_arc(c + Vector2(-20 + i * 20, 22), 10.0, PI, TAU, 12, Color(0.3, 0.8, 0.95), 3.0)
-			9:  # crimson cathedral: pointed window with a cross
-				var rc := Color(0.9, 0.25, 0.3)
-				draw_colored_polygon(PackedVector2Array([c + Vector2(-18, 30), c + Vector2(-18, -6), c + Vector2(0, -34), c + Vector2(18, -6), c + Vector2(18, 30)]), rc)
-				draw_line(c + Vector2(0, -22), c + Vector2(0, 26), Color(0.2, 0.05, 0.08), 4.0)
-				draw_line(c + Vector2(-12, 0), c + Vector2(12, 0), Color(0.2, 0.05, 0.08), 4.0)
-			10:  # storm fortress: lightning bolt
-				draw_colored_polygon(PackedVector2Array([c + Vector2(6, -36), c + Vector2(-14, 4), c + Vector2(-2, 4), c + Vector2(-8, 36), c + Vector2(16, -8), c + Vector2(3, -8)]), Color(1.0, 0.92, 0.35))
-			_:  # abyss throne: crown
+					var fa: float = PI * float(i) / 3.0
+					draw_line(c + Vector2.from_angle(fa) * 32.0, c - Vector2.from_angle(fa) * 32.0, Color(0.8, 0.95, 1.0), 4.0)
+				draw_circle(c, 7.0, Color(0.9, 1.0, 1.0))
+			6:  # Gilded Palace: crown
 				var kc := Color(1.0, 0.82, 0.3)
 				draw_colored_polygon(PackedVector2Array([c + Vector2(-28, 22), c + Vector2(-28, -14), c + Vector2(-14, 2), c + Vector2(0, -22), c + Vector2(14, 2), c + Vector2(28, -14), c + Vector2(28, 22)]), kc)
 				draw_circle(c + Vector2(0, 8), 5.0, Color(0.7, 0.3, 1.0))
 				draw_circle(c + Vector2(-16, 12), 3.0, Color(0.9, 0.2, 0.3))
 				draw_circle(c + Vector2(16, 12), 3.0, Color(0.9, 0.2, 0.3))
+			_:  # Night Citadel: crescent moon and star
+				draw_circle(c, 28.0, Color(0.75, 0.78, 1.0))
+				draw_circle(c + Vector2(12, -6), 24.0, Color(0.08, 0.08, 0.16))
+				draw_circle(c + Vector2(22, 14), 3.0, Color(1, 1, 1))
 		draw_arc(c, 42.0, 0.0, TAU, 32, Color(col, 0.35), 2.0)
 
 	func _draw() -> void:
@@ -142,6 +130,7 @@ class Card extends Control:
 		draw_rect(r, Color(edge, 0.95 if _hover and not locked else 0.45), false, 3.0 if _hover else 2.0)
 		var font: Font = ThemeDB.fallback_font
 		draw_string(font, Vector2(16, 30), "LEVEL %d" % (idx + 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(1, 1, 1, 0.9))
+		draw_string(font, Vector2(124, 30), "%d-%d" % [int(info.get("world", 0)) + 1, int(info.get("stage", 0)) + 1], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color(1, 1, 1, 0.45))
 		draw_string(font, Vector2(16, 58), String(info["name"]), HORIZONTAL_ALIGNMENT_LEFT, -1, 19, edge)
 		_icon(Vector2(size.x - 70.0, 84.0))
 		draw_multiline_string(font, Vector2(16, 90), String(info["desc"]), HORIZONTAL_ALIGNMENT_LEFT, 205.0, 14, 3, Color(0.85, 0.85, 0.9, 0.88))
@@ -385,6 +374,9 @@ func _ready() -> void:
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_toast.modulate.a = 0.0
 	_show("home")
+	_refresh_welcome()
+	if SaveScript.player_name == "":
+		_ask_name(true)
 
 
 func _process(delta: float) -> void:
@@ -549,6 +541,76 @@ func _show(page: String) -> void:
 		_refresh_missions()
 
 
+# ------------------------------------------------------------------ hero name
+func _refresh_welcome() -> void:
+	if _welcome != null:
+		_welcome.text = "" if SaveScript.player_name == "" else "Welcome, %s.  The Princess is waiting." % SaveScript.player_name
+
+
+## Asks for the hero's name (first launch, or from the profile). The princess is never named.
+func _ask_name(first: bool) -> void:
+	if _name_overlay != null:
+		_name_overlay.queue_free()
+	var gold := Color(0.97, 0.78, 0.32)
+	var dim := ColorRect.new()
+	dim.color = Color(0.0, 0.0, 0.03, 0.9)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_stage.add_child(dim)
+	_name_overlay = dim
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	dim.add_child(center)
+	var panel := PanelContainer.new()
+	panel.add_theme_stylebox_override("panel", _style(Color(0.07, 0.07, 0.11, 0.98), gold, 14, 3))
+	center.add_child(panel)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 14)
+	panel.add_child(box)
+	var title := _label(box, "WHAT IS YOUR HERO'S NAME?", 36, gold)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var sub := _label(box, "The Princess has been taken. Only you can save her.", 19, Color(0.85, 0.85, 0.92))
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	var edit := LineEdit.new()
+	edit.custom_minimum_size = Vector2(440, 58)
+	edit.max_length = 14
+	edit.placeholder_text = "Type a name..."
+	edit.text = SaveScript.player_name
+	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	edit.add_theme_font_size_override("font_size", 30)
+	box.add_child(edit)
+	var ok := Button.new()
+	ok.text = "CONTINUE"
+	ok.custom_minimum_size = Vector2(260, 58)
+	ok.add_theme_font_size_override("font_size", 24)
+	_apply_btn_style(ok, gold, true)
+	var submit := func() -> void:
+		var n: String = edit.text.strip_edges()
+		if n == "":
+			edit.grab_focus()
+			return
+		SaveScript.set_hero_name(n)
+		Audio.play("click", -2.0)
+		dim.queue_free()
+		_name_overlay = null
+		_refresh_welcome()
+		if _page == "profile":
+			_refresh_profile()
+	ok.pressed.connect(submit)
+	edit.text_submitted.connect(func(_t: String) -> void: submit.call())
+	var ok_holder := CenterContainer.new()
+	ok_holder.add_child(ok)
+	box.add_child(ok_holder)
+	if not first:
+		var close := func() -> void:
+			dim.queue_free()
+			_name_overlay = null
+		var cancel := _btn("CANCEL", 160, 44, close, Color(0.75, 0.75, 0.85), 18)
+		var c_holder := CenterContainer.new()
+		c_holder.add_child(cancel)
+		box.add_child(c_holder)
+	edit.call_deferred("grab_focus")
+
+
 # ------------------------------------------------------------------ home
 func _build_home() -> void:
 	_home = Control.new()
@@ -566,8 +628,10 @@ func _build_home() -> void:
 	var title := _label(box, "DUNGEON SNEAK", 76, Color(0.97, 0.78, 0.32))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_constant_override("outline_size", 12)
-	var sub := _label(box, "12 levels  -  12 bosses  -  sneak, stab, shoot, survive", 21, Color(0.85, 0.85, 0.92))
+	var sub := _label(box, "40 levels  -  40 bosses  -  sneak, stab, shoot, survive", 21, Color(0.85, 0.85, 0.92))
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_welcome = _label(box, "", 24, Color(1.0, 0.85, 0.4))
+	_welcome.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var gap := Control.new()
 	gap.custom_minimum_size = Vector2(0, 4)
 	box.add_child(gap)
@@ -614,6 +678,8 @@ func _build_levels() -> void:
 	_stage.add_child(_levels_page)
 	var t := _label(_levels_page, "SELECT LEVEL", 48, Color(0.95, 0.75, 0.3))
 	t.position = Vector2(40, 18)
+	_world_label = _label(_levels_page, "", 34, Color(1, 0.9, 0.6))
+	_world_label.position = Vector2(560, 28)
 	var hint := _label(_levels_page, "Clear a level to unlock the next one. Earn coins, buy gear in the shop.", 17, Color(0.8, 0.82, 0.9))
 	hint.position = Vector2(44, 82)
 	_grid = GridContainer.new()
@@ -653,17 +719,20 @@ func _rebuild_levels() -> void:
 		var card := Card.new()
 		card.idx = i
 		card.info = LevelsScript.LEVELS[i]
-		card.locked = i > SaveScript.unlocked
+		card.locked = i > SaveScript.unlocked and not DEV_UNLOCK_ALL
 		var rec: Dictionary = SaveScript.best.get(str(i), {})
 		card.stars = int(rec.get("stars", 0))
 		card.best_time = float(rec.get("time", -1.0))
 		card.chosen.connect(_on_level_chosen)
 		_grid.add_child(card)
 	_page_label.text = "%d / %d" % [_level_page + 1, _pages()]
+	var first_info: Dictionary = LevelsScript.LEVELS[first]
+	_world_label.text = "WORLD %d  -  %s" % [int(first_info.get("world", 0)) + 1, String(first_info.get("world_name", ""))]
+	_world_label.add_theme_color_override("font_color", first_info["banner"])
 
 
 func _on_level_chosen(idx: int) -> void:
-	if idx > SaveScript.unlocked:
+	if idx > SaveScript.unlocked and not DEV_UNLOCK_ALL:
 		_toast_msg("Locked - clear level %d first!" % idx)
 		Audio.play("hurt", -8.0)
 		return
@@ -705,6 +774,11 @@ func _refresh_profile() -> void:
 		old.queue_free()
 	var need: int = Progression.xp_needed(SaveScript.level)
 	_profile_line("PROFILE", 44, Color(0.6, 0.85, 1.0))
+	_profile_line("%s" % SaveScript.hero_name().to_upper(), 30, Color(1.0, 0.95, 0.8))
+	var rename := _btn("CHANGE NAME", 220, 44, func() -> void: _ask_name(false), Color(0.6, 0.8, 1.0), 18)
+	var rename_holder := CenterContainer.new()
+	rename_holder.add_child(rename)
+	_profile_box.add_child(rename_holder)
 	_profile_line("LEVEL %d" % SaveScript.level, 34, Color(1.0, 0.85, 0.3))
 	var bar := ProgressBar.new()
 	bar.custom_minimum_size = Vector2(520, 18)

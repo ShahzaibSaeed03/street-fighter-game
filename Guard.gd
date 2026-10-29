@@ -69,6 +69,9 @@ var _contact_timer: float = 0.0
 var _cone: PackedVector2Array = PackedVector2Array()
 var _flash_tween: Tween
 var _dying: bool = false
+var asleep: bool = false            # sleeping guard: stands still, wakes when hit or alerted
+var hear_mult: float = 1.0          # how far this guard hears the player (listener 1.8, scout 0.35)
+var elite: bool = false             # mini-boss guard: tougher, worth more
 
 
 ## Call before add_child().
@@ -149,6 +152,28 @@ func apply_kind(new_kind: String, mods: Dictionary) -> void:
 		shoot_cd = 2.2
 		blind_time = 2.5
 		coin_value = int(round(float(coin_value) * 1.5))
+	elif kind == "listener":
+		# hears everything, sees little: sneak (C) or stay away from it
+		max_health = 40
+		contact_damage = 12
+		patrol_speed = 50.0
+		suspect_speed = 100.0
+		chase_speed = 150.0
+		view_range = 200.0
+		view_half_angle = 0.6
+		hear_mult = 1.9
+		coin_value = int(round(float(coin_value) * 1.4))
+	elif kind == "scout":
+		# sees far in a narrow cone, hears almost nothing: stay out of its line, noise is fine
+		max_health = 22
+		contact_damage = 9
+		patrol_speed = 90.0
+		suspect_speed = 130.0
+		chase_speed = 235.0
+		view_range = 470.0
+		view_half_angle = 0.38
+		hear_mult = 0.35
+		coin_value = int(round(float(coin_value) * 1.3))
 	elif kind == "hound":
 		max_health = 18
 		contact_damage = 10
@@ -212,6 +237,8 @@ func _ready() -> void:
 		art.scale = Vector2(1.15, 1.15)
 	elif kind == "hound":
 		art.scale = Vector2(0.9, 0.9)
+	elif kind == "scout":
+		art.scale = Vector2(0.95, 0.95)
 
 	_player = get_tree().get_first_node_in_group("player") as Node2D
 	if waypoints.size() > 0:
@@ -230,6 +257,12 @@ func _ray_clear(to: Vector2) -> bool:
 
 func _can_see_player() -> bool:
 	if not _player_alive():
+		return false
+	# Hidden behind a curtain: only a guard right next to the player can still see him.
+	var arena: Node = get_tree().get_first_node_in_group("arena")
+	var reach: float = float(_player.call("curtain_reach")) if _player.has_method("curtain_reach") else 70.0
+	if arena != null and arena.has_method("in_curtain") and arena.in_curtain(_player.global_position) \
+			and global_position.distance_to(_player.global_position) > reach:
 		return false
 	var to: Vector2 = _player.global_position - global_position
 	var dist: float = to.length()
@@ -257,7 +290,7 @@ func _update_awareness(delta: float) -> void:
 		awareness += delta * (0.9 + closeness * 2.8)
 		_last_known = _player.global_position
 		_lost_timer = 0.0
-	elif dist < float(_player.noise_radius()):
+	elif dist < float(_player.noise_radius()) * hear_mult:
 		# heard something: gets curious, but only seeing you can trigger a chase
 		awareness = minf(awareness + delta * 0.9, 0.7)
 		_last_known = _player.global_position
@@ -271,6 +304,11 @@ func _physics_process(delta: float) -> void:
 	if state == S.DEAD:
 		return
 	_t += delta
+	if asleep:
+		velocity = Vector2.ZERO
+		move_and_slide()
+		queue_redraw()
+		return
 	_contact_timer = maxf(_contact_timer - delta, 0.0)
 	_update_awareness(delta)
 
@@ -433,6 +471,16 @@ func _fire(angle: float, speed: float, dmg: int) -> void:
 	Audio.play("click", -8.0, 0.15)
 
 
+## Mini-boss guard: tougher, hits harder, worth more.
+func make_elite() -> void:
+	elite = true
+	max_health = int(round(float(max_health) * 1.9))
+	health = max_health
+	contact_damage = int(round(float(contact_damage) * 1.3))
+	coin_value *= 2
+	art.scale *= 1.2
+
+
 func force_chase() -> void:
 	if _player_alive() and state != S.DEAD and state != S.CHASE:
 		_start_chase()
@@ -457,6 +505,7 @@ func _start_chase() -> void:
 func hear_noise(pos: Vector2) -> void:
 	if state == S.DEAD or state == S.CHASE:
 		return
+	asleep = false
 	_last_known = pos
 	awareness = maxf(awareness, 0.6)
 	state = S.SUSPECT
@@ -467,6 +516,7 @@ func hear_noise(pos: Vector2) -> void:
 func hear_alert(pos: Vector2) -> void:
 	if state == S.DEAD or state == S.CHASE:
 		return
+	asleep = false
 	_last_known = pos
 	awareness = maxf(awareness, 0.65)
 	state = S.SUSPECT
@@ -508,12 +558,30 @@ func _draw() -> void:
 		draw_line(bd * 20.0 + Vector2.from_angle(facing_angle - 1.0) * 17.0, bd * 20.0 + Vector2.from_angle(facing_angle + 1.0) * 17.0, Color(0.9, 0.9, 0.9, 0.7), 1.0)
 	elif kind == "brute":
 		draw_arc(Vector2.ZERO, 27.0, 0.0, TAU, 24, Color(0.78, 0.8, 0.9, 0.55), 3.0)
+	elif kind == "listener":
+		# sound-wave rings: this guard is listening
+		for k in 2:
+			var wv: float = fposmod(_t * 0.8 + float(k) * 0.5, 1.0)
+			draw_arc(Vector2.ZERO, 22.0 + wv * 26.0, 0.0, TAU, 24, Color(0.6, 0.9, 1.0, 0.35 * (1.0 - wv)), 2.0)
+	elif kind == "scout":
+		draw_line(Vector2.from_angle(facing_angle) * 22.0, Vector2.from_angle(facing_angle) * view_range, Color(1.0, 0.3, 0.2, 0.18), 1.5)
 	var top: float = -58.0 if is_boss else -46.0
 	if awareness > 0.03 and state != S.CHASE:
 		draw_rect(Rect2(Vector2(-18.0, top), Vector2(36.0, 5.0)), Color(0, 0, 0, 0.6))
 		var fill: Color = Color(1.0, 0.85, 0.2) if awareness < 0.6 else Color(1.0, 0.45, 0.1)
 		draw_rect(Rect2(Vector2(-17.0, top + 1.0), Vector2(34.0 * awareness, 3.0)), fill)
 	var font: Font = ThemeDB.fallback_font
+	if asleep:
+		# drifting "z" bubbles rising from the head
+		for k in 3:
+			var rise: float = fposmod(_t * 0.5 + float(k) * 0.33, 1.0)
+			var zc := Color(0.7, 0.85, 1.0, 1.0 - rise)
+			draw_string(font, Vector2(8.0 + rise * 14.0, top - 6.0 - rise * 34.0), "z", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 12 + k * 4, zc)
+	if elite:
+		var aura: float = 0.10 + 0.08 * sin(_t * 4.0)
+		draw_circle(Vector2.ZERO, 34.0, Color(1.0, 0.25, 0.2, aura))
+		draw_arc(Vector2.ZERO, 30.0, 0.0, TAU, 28, Color(1.0, 0.8, 0.2, 0.8), 3.0)
+		draw_string(font, Vector2(-22.0, top - 16.0), "ELITE", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 13, Color(1.0, 0.8, 0.3))
 	if state == S.SUSPECT:
 		draw_string(font, Vector2(-6.0, top - 4.0), "?", HORIZONTAL_ALIGNMENT_LEFT, -1.0, 26, Color(1.0, 0.85, 0.2))
 	elif state == S.CHASE:
@@ -525,6 +593,8 @@ func _draw() -> void:
 func can_backstab(from_pos: Vector2) -> bool:
 	if state == S.DEAD or state == S.CHASE or is_boss:
 		return false
+	if asleep:
+		return (from_pos - global_position).length() <= 85.0   # sleepers can be taken from any side
 	var to_player: Vector2 = from_pos - global_position
 	if to_player.length() > 85.0:
 		return false
@@ -534,6 +604,10 @@ func can_backstab(from_pos: Vector2) -> bool:
 func backstab(from_pos: Vector2) -> void:
 	if state == S.DEAD:
 		return
+	if asleep:
+		Missions.add("sleepers")
+		coin_value *= 2   # sleeper bonus: stabbing a sleeping guard pays double
+		get_tree().call_group("game_manager", "toast", "Sleeper bonus!  Double coins")
 	if kind == "brute":
 		get_tree().call_group("game_manager", "toast", "Heavy stab!")
 		take_damage(70, from_pos, 380.0)
@@ -548,6 +622,7 @@ func backstab(from_pos: Vector2) -> void:
 func take_damage(amount: int, from_position: Vector2, knockback_force: float) -> void:
 	if _dying:
 		return
+	asleep = false
 	# Shieldbearers block anything coming from the front. Hit them from the side or behind.
 	if kind == "shield" and absf(angle_difference(facing_angle, (from_position - global_position).angle())) < 1.1:
 		if Progression.has_perk("shield_breaker"):

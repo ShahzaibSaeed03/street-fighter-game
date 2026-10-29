@@ -16,6 +16,18 @@ const FIXED: Dictionary = {
 		"eye": Color(2.0, 0.2, 0.2), "blood": Color(0.3, 0.7, 0.15)},
 	"scorpion": {"skin": Color(0.62, 0.45, 0.22), "dark": Color(0.32, 0.20, 0.10), "accent": Color(0.85, 0.70, 0.35),
 		"eye": Color(1.8, 0.8, 0.2), "blood": Color(0.8, 0.7, 0.3)},
+	"imp": {"skin": Color(0.80, 0.25, 0.18), "dark": Color(0.36, 0.08, 0.08), "accent": Color(1.0, 0.75, 0.25),
+		"eye": Color(2.0, 1.6, 0.3), "blood": Color(0.9, 0.35, 0.1)},
+	"yeti": {"skin": Color(0.88, 0.93, 0.98), "dark": Color(0.45, 0.55, 0.68), "accent": Color(0.65, 0.85, 1.0),
+		"eye": Color(0.5, 1.6, 2.2), "blood": Color(0.6, 0.85, 1.0)},
+	"crab": {"skin": Color(0.85, 0.40, 0.50), "dark": Color(0.40, 0.14, 0.24), "accent": Color(0.95, 0.85, 0.80),
+		"eye": Color(2.0, 1.2, 0.3), "blood": Color(0.85, 0.5, 0.6)},
+	"shroom": {"skin": Color(0.78, 0.55, 0.38), "dark": Color(0.30, 0.18, 0.28), "accent": Color(0.95, 0.90, 0.75),
+		"eye": Color(1.8, 2.0, 0.4), "blood": Color(0.7, 0.8, 0.3)},
+	"knight": {"skin": Color(0.62, 0.66, 0.74), "dark": Color(0.20, 0.22, 0.30), "accent": Color(0.90, 0.75, 0.30),
+		"eye": Color(2.0, 0.5, 0.3), "blood": Color(0.7, 0.15, 0.15)},
+	"slime": {"skin": Color(0.35, 0.78, 0.45), "dark": Color(0.10, 0.36, 0.22), "accent": Color(0.75, 1.0, 0.75),
+		"eye": Color(0.3, 0.2, 0.2), "blood": Color(0.4, 0.9, 0.5)},
 	"hound": {"skin": Color(0.42, 0.36, 0.30), "dark": Color(0.18, 0.14, 0.12), "accent": Color(0.75, 0.65, 0.5),
 		"eye": Color(2.0, 0.9, 0.2), "blood": Color(0.6, 0.12, 0.1)},
 }
@@ -131,6 +143,18 @@ func _draw() -> void:
 			_draw_ghost()
 		"hound":
 			_draw_hound()
+		"imp":
+			_draw_imp()
+		"yeti":
+			_draw_yeti()
+		"crab":
+			_draw_crab()
+		"shroom":
+			_draw_shroom()
+		"knight":
+			_draw_knight()
+		"slime":
+			_draw_slime()
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
@@ -440,3 +464,150 @@ func _draw_wraith() -> void:
 	_ellipse(Vector2(9.5, 0), 4.0, 5.4, Color(0.02, 0.02, 0.04))
 	draw_circle(Vector2(11, -2.2), 1.5, _pal["eye"])
 	draw_circle(Vector2(11, 2.2), 1.5, _pal["eye"])
+
+
+## Imp: small, fast little demon with horns, bat wings and a flicking tail.
+func _draw_imp() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	var s: float = sin(_walk * 1.3)
+	draw_line(Vector2(-8, 0), Vector2(-20, sin(_time * 6.0) * 6.0), dark, 2.5)
+	draw_colored_polygon(PackedVector2Array([Vector2(-20, sin(_time * 6.0) * 6.0 - 3.0), Vector2(-26, sin(_time * 6.0) * 6.0), Vector2(-20, sin(_time * 6.0) * 6.0 + 3.0)]), acc)
+	for side in [-1.0, 1.0]:
+		var sd: float = side
+		draw_colored_polygon(PackedVector2Array([Vector2(-4, 5.0 * sd), Vector2(-12, 17.0 * sd + s * 2.0), Vector2(0, 13.0 * sd)]), Color(dark, 0.9))
+		draw_line(Vector2(-2, 7.0 * sd), Vector2(8.0 + s * 3.0 * sd, 12.0 * sd), dark, 3.0)
+		draw_line(Vector2(-2, 3.0 * sd), Vector2(-6.0 - s * 4.0 * sd, 7.0 * sd), dark, 3.0)
+	_ellipse(Vector2(0, 0), 9.0, 8.0, dark)
+	_ellipse(Vector2(0.5, 0), 7.6, 6.8, skin)
+	_ellipse(Vector2(9, 0), 6.0, 5.6, dark)
+	_ellipse(Vector2(9.5, 0), 5.0, 4.6, skin)
+	for side in [-1.0, 1.0]:
+		var sd2: float = side
+		draw_colored_polygon(PackedVector2Array([Vector2(8, 3.5 * sd2), Vector2(10, 4.5 * sd2), Vector2(7, 11.0 * sd2)]), acc)
+		draw_circle(Vector2(12, 2.0 * sd2), 1.3, _pal["eye"])
+	draw_line(Vector2(12, -1), Vector2(15, 0), dark, 1.5)
+
+
+## Yeti: big, shaggy and slow, with long arms and fangs.
+func _draw_yeti() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	var s: float = sin(_walk * 0.7)
+	_ellipse(Vector2(s * 5.0, -9), 6.5, 5.0, dark)
+	_ellipse(Vector2(-s * 5.0, 9), 6.5, 5.0, dark)
+	for side in [-1.0, 1.0]:
+		var sd: float = side
+		var hand := Vector2(15.0 + s * 4.0 * sd + pulse * 8.0, 17.0 * sd)
+		draw_line(Vector2(0, 11.0 * sd), hand, dark, 8.0)
+		draw_line(Vector2(0, 11.0 * sd), hand, skin, 5.5)
+		draw_circle(hand, 5.5, skin)
+		for c in 3:
+			draw_line(hand + Vector2(3, (float(c) - 1.0) * 2.5), hand + Vector2(9, (float(c) - 1.0) * 3.5), acc, 1.8)
+	_ellipse(Vector2(-2, 0), 16.0, 17.0, dark)
+	_ellipse(Vector2(-1, 0), 14.4, 15.4, skin)
+	for i in 7:
+		var a: float = float(i) * 0.9 + 0.4
+		draw_line(Vector2(-2, 0) + Vector2.from_angle(a) * 12.0, Vector2(-2, 0) + Vector2.from_angle(a) * 17.0, dark, 1.6)
+	_ellipse(Vector2(13, 0), 9.0, 8.4, dark)
+	_ellipse(Vector2(13.5, 0), 7.8, 7.2, skin)
+	_ellipse(Vector2(16, 0), 5.0, 4.0, Color(0.55, 0.65, 0.78))
+	for side in [-1.0, 1.0]:
+		var sd2: float = side
+		draw_circle(Vector2(14, 3.0 * sd2), 1.6, _pal["eye"])
+		draw_colored_polygon(PackedVector2Array([Vector2(19, 1.4 * sd2), Vector2(22, 2.0 * sd2), Vector2(19, 3.6 * sd2)]), Color(0.95, 0.95, 0.9))
+
+
+## Crab: wide shell, two big claws held forward, legs scuttling sideways.
+func _draw_crab() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	for side in [-1.0, 1.0]:
+		var sd: float = side
+		for i in 3:
+			var ph: float = _walk * 1.4 + float(i) * 1.7 + (PI if sd > 0.0 else 0.0)
+			draw_line(Vector2(3.0 - float(i) * 6.0, 7.0 * sd), Vector2(5.0 - float(i) * 8.0 + sin(ph) * 3.0, 19.0 * sd), dark, 2.4)
+		var base := Vector2(8, 9.0 * sd)
+		var tip := Vector2(21.0 + pulse * 6.0, 11.0 * sd + sin(_time * 3.0 + sd) * 2.0)
+		draw_line(base, tip, dark, 5.0)
+		draw_line(base, tip, skin, 3.0)
+		draw_colored_polygon(PackedVector2Array([tip + Vector2(-4, -4), tip + Vector2(9, -1.5 * sd), tip + Vector2(-4, 4)]), dark)
+		draw_colored_polygon(PackedVector2Array([tip + Vector2(-3, -3), tip + Vector2(7, 0), tip + Vector2(-3, 3)]), acc if sd > 0.0 else skin)
+	_ellipse(Vector2(0, 0), 13.0, 15.0, dark)
+	_ellipse(Vector2(0.5, 0), 11.4, 13.4, skin)
+	_ellipse(Vector2(-1, -4), 6.0, 4.0, Color(1, 1, 1, 0.14))
+	for side in [-1.0, 1.0]:
+		var sd2: float = side
+		draw_line(Vector2(10, 4.0 * sd2), Vector2(14, 5.0 * sd2), dark, 1.8)
+		draw_circle(Vector2(14.5, 5.0 * sd2), 2.0, _pal["eye"])
+
+
+## Mushroom creature: a spotted cap on a stubby body that waddles forward.
+func _draw_shroom() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	var s: float = sin(_walk)
+	_ellipse(Vector2(s * 4.0, -6), 4.6, 3.6, dark)
+	_ellipse(Vector2(-s * 4.0, 6), 4.6, 3.6, dark)
+	_ellipse(Vector2(2, 0), 9.0, 9.0, acc)
+	_ellipse(Vector2(2, 0), 7.4, 7.4, Color(acc.r * 0.9, acc.g * 0.9, acc.b * 0.85))
+	draw_circle(Vector2(7, -2.4), 1.6, _pal["eye"])
+	draw_circle(Vector2(7, 2.4), 1.6, _pal["eye"])
+	draw_line(Vector2(9, -1), Vector2(9, 1), dark, 1.2)
+	_ellipse(Vector2(-3, 0), 15.0, 15.0, dark)
+	_ellipse(Vector2(-3, 0), 13.6, 13.6, skin)
+	for p in [Vector2(-9, -6), Vector2(-2, 8), Vector2(-8, 5), Vector2(2, -9), Vector2(-14, 0)]:
+		draw_circle(p, 2.6, acc)
+	draw_arc(Vector2(-3, 0), 11.0, -0.9, 0.9, 8, Color(1, 1, 1, 0.18), 2.0)
+
+
+## Knight: armoured soldier with a helmet, a glowing visor slit and a sword held forward.
+func _draw_knight() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	var s: float = sin(_walk)
+	_ellipse(Vector2(s * 6.0, -7), 5.6, 4.0, dark)
+	_ellipse(Vector2(-s * 6.0, 7), 5.6, 4.0, dark)
+	var sw := Vector2(22.0 + pulse * 8.0, 8.0)
+	draw_line(Vector2(4, 10), sw, dark, 3.4)
+	draw_line(Vector2(4, 10), sw, Color(0.85, 0.9, 1.0), 1.6)
+	draw_line(Vector2(sw.x - 14.0, sw.y - 4.0), Vector2(sw.x - 14.0, sw.y + 4.0), acc, 2.4)
+	draw_line(Vector2(2, -10), Vector2(8, -13), dark, 5.0)
+	draw_line(Vector2(2, -10), Vector2(8, -13), skin, 3.0)
+	_ellipse(Vector2(0, 0), 12.5, 15.0, dark)
+	_ellipse(Vector2(0.5, 0), 11.0, 13.4, skin)
+	draw_line(Vector2(-6, -9), Vector2(-6, 9), dark, 1.4)
+	draw_line(Vector2(-10, 0), Vector2(8, 0), acc, 1.6)
+	draw_circle(Vector2(4, 12), 4.5, skin)
+	draw_circle(Vector2(8, -13), 3.6, skin)
+	var hp := Vector2(11, 0)
+	draw_circle(hp, 8.2, dark)
+	draw_circle(hp, 7.2, skin)
+	draw_line(hp + Vector2(-6, 0), hp + Vector2(-13, 0), Color(0.85, 0.2, 0.2), 3.4)
+	draw_line(hp + Vector2(1, -4.6), hp + Vector2(1, 4.6), dark, 1.6)
+	draw_line(hp + Vector2(3, -2.6), hp + Vector2(3, 2.6), _pal["eye"], 1.8)
+
+
+## Slime: a wobbling blob with two eyes and a few bubbles inside.
+func _draw_slime() -> void:
+	var skin: Color = _pal["skin"]
+	var dark: Color = _pal["dark"]
+	var acc: Color = _pal["accent"]
+	var w: float = sin(_time * 5.0 + _walk * 0.2)
+	var rx: float = 15.0 + w * 1.6
+	var ry: float = 14.0 - w * 1.6
+	_ellipse(Vector2(0, 0), rx + 2.0, ry + 2.0, dark, 22)
+	_ellipse(Vector2(0, 0), rx, ry, skin, 22)
+	_ellipse(Vector2(-4, -4), rx * 0.5, ry * 0.4, Color(acc, 0.55), 14)
+	for p in [Vector2(-6, 5), Vector2(1, 7), Vector2(-9, -1)]:
+		draw_circle(p, 2.0, Color(acc, 0.7))
+	for side in [-1.0, 1.0]:
+		var sd: float = side
+		draw_circle(Vector2(8, 4.0 * sd), 3.0, Color(1, 1, 1))
+		draw_circle(Vector2(9, 4.0 * sd), 1.6, Color(0.08, 0.06, 0.06))
+	draw_arc(Vector2(10, 0), 3.0, -1.0, 1.0, 6, dark, 1.4)

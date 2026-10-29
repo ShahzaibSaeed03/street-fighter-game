@@ -20,6 +20,8 @@ var visited: Dictionary = {}
 var current_room: String = ""
 
 const MissionsScript := preload("res://Missions.gd")
+const StoryScript := preload("res://Story.gd")
+const StorySceneScript := preload("res://StoryScene.gd")
 var stealth_kills: int = 0
 var kills: int = 0
 var alerts: int = 0
@@ -33,6 +35,7 @@ var _hp_bar: ProgressBar
 var _dodge_bar: ProgressBar
 var _objective: Label
 var _room_label: Label
+var _timer_label: Label
 var _hint: Label
 var _toast: Label
 var _key_bronze: ColorRect
@@ -87,7 +90,7 @@ func _ready() -> void:
 	_weather.set_script(WeatherScript)
 	add_child(_weather)
 	_weather.configure(String(lv["weather"]))
-	_weather.position = dungeon.room_center("A")
+	_weather.position = dungeon.room_center(dungeon.start_id())
 
 	dungeon.populate()
 	_find_boss()
@@ -95,11 +98,12 @@ func _ready() -> void:
 	dungeon.guard_died.connect(_on_guard_died)
 
 	camera = Camera2D.new()
-	camera.position = dungeon.room_center("A")
+	camera.position = dungeon.room_center(dungeon.start_id())
 	camera.position_smoothing_enabled = true
 	camera.position_smoothing_speed = 6.0
 	add_child(camera)
-	camera.zoom = Vector2.ONE * Tuning.camera_zoom()
+	_update_camera_zoom()
+	get_viewport().size_changed.connect(_update_camera_zoom)
 	if Tuning.follow_camera():
 		# Phone: follow the hero instead of snapping room to room; stop at the dungeon edge.
 		var wb: Rect2 = dungeon.world_bounds()
@@ -116,7 +120,7 @@ func _ready() -> void:
 	player.health_changed.connect(_on_health_changed)
 	player.player_died.connect(_on_player_died)
 	_on_health_changed(player.health, player.max_health)
-	_enter_room("A", true)
+	_enter_room(dungeon.start_id(), true)
 
 	_begin()
 
@@ -145,6 +149,7 @@ func _setup_inputs() -> void:
 	_key_action("sneak", KEY_CTRL)
 	_key_action("restart", KEY_R)
 	_key_action("shoot", KEY_F)
+	_key_action("interact", KEY_E)
 
 
 func _setup_environment() -> void:
@@ -202,7 +207,9 @@ func _build_ui() -> void:
 	tl.position = Vector2(18, 14)
 	tl.custom_minimum_size = Vector2(280, 0)
 	_ui.add_child(tl)
-	_level_label = _label(tl, "LEVEL %d / %d  -  %s" % [level_idx + 1, LevelsScript.LAST + 1, lv["name"]], 17, lv["banner"])
+	_level_label = _label(tl, "%s   -   LEVEL %d / %d  -  %s   (seed %d)" % [SaveScript.hero_name().to_upper(), level_idx + 1, LevelsScript.LAST + 1, lv["name"], dungeon.seed_value()], 17, lv["banner"])
+	_level_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_level_label.custom_minimum_size = Vector2(290, 0)   # long level names wrap instead of running into the objective text
 	_coin_label = _label(tl, "COINS 0", 19, Color(1.0, 0.85, 0.3))
 	_hp_label = _label(tl, "HP 100 / 100", 22)
 	_hp_bar = ProgressBar.new()
@@ -258,12 +265,20 @@ func _build_ui() -> void:
 	_room_label.custom_minimum_size = Vector2(500, 0)
 	_room_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 
+	# countdown for timed levels (empty on the others)
+	_timer_label = _label(_ui, "", 17, Color(1.0, 0.7, 0.4))
+	_timer_label.position = Vector2(330, 40)
+	_timer_label.custom_minimum_size = Vector2(500, 0)
+	_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
 	# minimap (top-right)
 	var mm := Control.new()
 	mm.set_script(MinimapScript)
 	mm.set("game", self)
 	mm.set("dungeon", dungeon)
-	mm.position = Vector2(1000, 22)
+	# right-aligned: the map grows to the left when the dungeon is wide
+	var span: Vector2i = dungeon.cell_span()
+	mm.position = Vector2(1140.0 - float(span.x) * 35.0, 22.0)
 	_ui.add_child(mm)
 
 	# hint + toast + big banner
@@ -291,6 +306,7 @@ func _build_ui() -> void:
 	_pin(_boss_bar, "c")
 	_pin(_objective, "c")
 	_pin(_room_label, "c")
+	_pin(_timer_label, "c")
 	_pin(mm, "r")
 	_pin(_hint, "cb")
 	_pin(_toast, "c")
@@ -379,7 +395,7 @@ func _build_title_panel() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var sub := _label(box, "Fight through FIVE levels of danger. Take the guards from behind.\nFind the bronze and gold keys. End every boss.", 20, Color(0.85, 0.85, 0.9))
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	var ctl := _label(box, "WASD / Arrows  -  move\nC or Ctrl  -  sneak (quiet, harder to see)\nSPACE  -  sword  (from behind = instant silent kill)\nSHIFT  -  roll (dodge)\nR  -  restart level    N / B  -  skip to next / previous level\n\nGuards see inside the yellow cone. Walls and crates hide you.\nHearts heal. Locked doors open when you carry the right key.", 17, Color(0.78, 0.8, 0.88))
+	var ctl := _label(box, "WASD / Arrows  -  move\nC or Ctrl  -  sneak (quiet, harder to see)\nSPACE  -  sword  (from behind = instant silent kill)\nSHIFT  -  roll (dodge)\nR  -  restart level    N / B  -  skip to next / previous level\n\nGuards see inside the yellow cone. Walls, crates and curtains hide you.\nHearts heal. Locked doors open when you carry the right key.", 17, Color(0.78, 0.8, 0.88))
 	ctl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var btn := Button.new()
 	btn.text = "START"
@@ -389,7 +405,26 @@ func _build_title_panel() -> void:
 	btn.call_deferred("grab_focus")
 
 
+func _play_story(which: String) -> void:
+	var sd: Dictionary = StoryScript.get_scene(level_idx, which)
+	if sd.is_empty():
+		return
+	var key: String = "story_%d_%s" % [level_idx, which]
+	if StoryScript.SKIP_SEEN and bool(Engine.get_meta(key, false)):
+		return
+	Engine.set_meta(key, true)
+	var was_paused: bool = get_tree().paused
+	get_tree().paused = true
+	var sc := StorySceneScript.new()
+	sc.setup(level_idx, sd)
+	_ui.add_child(sc)
+	await sc.finished
+	sc.queue_free()
+	get_tree().paused = was_paused
+
+
 func _begin() -> void:
+	await _play_story("intro")
 	get_tree().paused = false
 	Audio.play("click", -4.0)
 	_show_banner("LEVEL %d  -  %s" % [level_idx + 1, lv["name"]], lv["banner"])
@@ -440,6 +475,8 @@ func _show_banner(text: String, col: Color) -> void:
 func _on_guard_died(guard: Node2D, stealth: bool) -> void:
 	kills += 1
 	MissionsScript.add("kills")
+	if bool(guard.get("elite")):
+		MissionsScript.add("elites")
 	if stealth:
 		stealth_kills += 1
 		MissionsScript.add("silent")
@@ -479,9 +516,10 @@ func _on_guard_died(guard: Node2D, stealth: bool) -> void:
 		await get_tree().create_timer(1.6).timeout
 		if SaveScript.pending_perks > 0:
 			await _run_perk_picker()
+		await _play_story("outro")
 		var star_text: String = "*".repeat(stars) + "-".repeat(3 - stars)
-		var body := "Stars  %s\nTime  %s\nGuards defeated  %d   (silent: %d)\nTimes spotted  %d\nBonus coins  +%d" \
-				% [star_text, _fmt_time(elapsed), kills, stealth_kills, alerts, bonus]
+		var body := "Well done, %s!\nStars  %s\nTime  %s\nGuards defeated  %d   (silent: %d)\nTimes spotted  %d\nBonus coins  +%d" \
+				% [SaveScript.hero_name(), star_text, _fmt_time(elapsed), kills, stealth_kills, alerts, bonus]
 		body += extra
 		if level_idx < LevelsScript.LAST:
 			Engine.set_meta("level", level_idx + 1)
@@ -543,7 +581,7 @@ func _on_player_died() -> void:
 	await get_tree().create_timer(1.3).timeout
 	_end_btn.text = "Retry level (R)"
 	_revive_btn.visible = revive_kits > 0
-	_show_end("YOU DIED", "Level %d - %s\nYour coins are kept. Buy better gear in the shop!" % [level_idx + 1, lv["name"]], Color(0.85, 0.12, 0.12))
+	_show_end("%s HAS FALLEN" % SaveScript.hero_name().to_upper(), "Level %d - %s\nThe Princess is still waiting. Your coins are kept - buy better gear in the shop!" % [level_idx + 1, lv["name"]], Color(0.85, 0.12, 0.12))
 
 
 func _show_end(title: String, body: String, col: Color) -> void:
@@ -579,8 +617,7 @@ func _update_boss_hud() -> void:
 
 ## One Revive Kit per level, in a random side room.
 func _spawn_revive_kit() -> void:
-	var rooms: Array = ["B", "C", "E"]
-	var id: String = rooms[randi() % rooms.size()]
+	var id: String = dungeon.revive_room()
 	_kit = RevivePickupScript.new()
 	_kit.position = dungeon.room_center(id)
 	add_child(_kit)
@@ -604,7 +641,7 @@ func _revive() -> void:
 	_end_panel.hide()
 	_revive_btn.hide()
 	player.revive(0.5)
-	toast("Revived!")
+	toast("%s is back on their feet!" % SaveScript.hero_name())
 
 
 func _on_health_changed(current: int, maximum: int) -> void:
@@ -622,6 +659,33 @@ func _fmt_time(t: float) -> String:
 	return "%02d:%02d" % [int(t) / 60, int(t) % 60]
 
 
+# ------------------------------------------------------------------ camera
+## Phone camera: zoomed in just enough that the screen never shows more than one room, so the black
+## void beyond the walls (or the neighbouring empty cells) is never visible.
+func _update_camera_zoom() -> void:
+	if camera == null:
+		return
+	var z: float = Tuning.camera_zoom()
+	if Tuning.follow_camera():
+		var vs: Vector2 = get_viewport().get_visible_rect().size
+		z = maxf(z, maxf(vs.x / 1152.0, vs.y / 648.0))
+	camera.zoom = Vector2.ONE * z
+
+
+## Keeps the following camera inside the room the player is in.
+func _clamp_to_room(p: Vector2) -> Vector2:
+	if current_room == "":
+		return p
+	var half: Vector2 = get_viewport().get_visible_rect().size / camera.zoom * 0.5
+	var o: Vector2 = dungeon.origin_of(current_room)
+	var out := Vector2(o.x + 576.0, o.y + 324.0)
+	if half.x * 2.0 < 1152.0:
+		out.x = clampf(p.x, o.x + half.x, o.x + 1152.0 - half.x)
+	if half.y * 2.0 < 648.0:
+		out.y = clampf(p.y, o.y + half.y, o.y + 648.0 - half.y)
+	return out
+
+
 # ------------------------------------------------------------------ rooms / objective
 func _enter_room(id: String, silent: bool = false) -> void:
 	current_room = id
@@ -629,9 +693,10 @@ func _enter_room(id: String, silent: bool = false) -> void:
 		_weather.position = dungeon.room_center(id)
 	var first: bool = not visited.has(id)
 	visited[id] = true
+	dungeon.on_room_entered(id)
 	_room_label.text = "%s   |   %s" % [lv["name"], dungeon.room_name(id)]
 	if first and not silent:
-		if id == "F":
+		if id == dungeon.boss_id():
 			var bb: Dictionary = lv["boss"]
 			_show_banner("BOSS: %s" % bb["name"], Color(1.0, 0.35, 0.3))
 		else:
@@ -650,11 +715,12 @@ func _refresh_objective() -> void:
 	var boss_info: Dictionary = lv["boss"]
 	var boss_name: String = String(boss_info["name"])
 	if player.keys.has("gold"):
-		_objective.text = "Open the gold door in the %s and defeat %s" % [dungeon.room_name("D"), boss_name]
+		_objective.text = "Open the gold door in the %s and defeat %s" % [dungeon.room_name(dungeon.gold_door_from()), boss_name]
 	elif player.keys.has("bronze"):
-		_objective.text = "Open the bronze door between the %s and the %s. Find the GOLD key in the %s" % [dungeon.room_name("B"), dungeon.room_name("D"), dungeon.room_name("E")]
+		var bp: Array = dungeon.bronze_door_rooms()
+		_objective.text = "Open the bronze door between the %s and the %s. Find the GOLD key in the %s" % [dungeon.room_name(bp[0]), dungeon.room_name(bp[1]), dungeon.room_name(dungeon.gold_key_room())]
 	else:
-		_objective.text = "Find the BRONZE key in the %s" % dungeon.room_name("C")
+		_objective.text = "Find the BRONZE key in the %s" % dungeon.room_name(dungeon.bronze_key_room())
 
 
 # ------------------------------------------------------------------ per frame
@@ -673,6 +739,15 @@ func _process(delta: float) -> void:
 	if _hint_timer <= 0.0:
 		_hint.text = ""
 
+	# timed levels: count down, and fail the level when time runs out
+	var tl: float = float(lv.get("time_limit", 0))
+	if tl > 0.0:
+		var left: float = maxf(tl - elapsed, 0.0)
+		_timer_label.text = "TIME  %s" % _fmt_time(left)
+		if left <= 0.0 and not finished:
+			finished = true
+			_end_btn.text = "Retry level (R)"
+			_show_end("TIME'S UP", "The guards kept you too long.\nRetry the level and move faster.", Color(0.85, 0.5, 0.2))
 	_dodge_bar.value = player.dodge_ready_ratio() * 100.0
 	_kit_label.text = "REVIVE KIT  %d" % revive_kits
 	_update_boss_hud()
@@ -685,7 +760,7 @@ func _process(delta: float) -> void:
 		_enter_room(room)
 	var target: Vector2 = dungeon.room_center(current_room)
 	if Tuning.follow_camera():
-		target = player.global_position
+		target = _clamp_to_room(player.global_position)
 	camera.position = target
 	if _shake_strength > 0.01:
 		camera.offset = Vector2(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * _shake_strength

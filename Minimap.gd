@@ -14,7 +14,8 @@ func _process(_delta: float) -> void:
 
 
 func _cell_pos(cell: Vector2i) -> Vector2:
-	return Vector2(float(cell.x), float(cell.y)) * (CELL + Vector2(GAP, GAP))
+	var lo: Vector2i = dungeon.cell_min()
+	return Vector2(float(cell.x - lo.x), float(cell.y - lo.y)) * (CELL + Vector2(GAP, GAP))
 
 
 func _draw() -> void:
@@ -25,15 +26,18 @@ func _draw() -> void:
 	var shown: Dictionary = {}
 	for id in visited:
 		shown[id] = true
-	for d in dungeon.DOORS:
+	for d in dungeon.doors():
+		if String(d["key"]) == "secret":
+			continue   # hidden room: only shown once you are inside it
 		var a: String = d["a"]
 		var b: String = d["b"]
 		if visited.has(a):
 			shown[b] = true
 		if visited.has(b):
 			shown[a] = true
-	draw_rect(Rect2(Vector2(-6, -6), Vector2(4.0 * (CELL.x + GAP) + 7.0, 2.0 * (CELL.y + GAP) + 7.0)), Color(0, 0, 0, 0.45))
-	for d in dungeon.DOORS:
+	var span: Vector2i = dungeon.cell_span()
+	draw_rect(Rect2(Vector2(-6, -6), Vector2(float(span.x) * (CELL.x + GAP) + 7.0, float(span.y) * (CELL.y + GAP) + 7.0)), Color(0, 0, 0, 0.45))
+	for d in dungeon.doors():
 		var a: String = d["a"]
 		var b: String = d["b"]
 		if not (shown.has(a) and shown.has(b)):
@@ -51,7 +55,7 @@ func _draw() -> void:
 		var p: Vector2 = _cell_pos(dungeon.cell_of(id))
 		var seen: bool = visited.has(id)
 		var fill: Color = Color(0.32, 0.34, 0.45, 0.95) if seen else Color(0.14, 0.15, 0.2, 0.8)
-		if id == "F":
+		if id == dungeon.boss_id():
 			fill = Color(0.5, 0.12, 0.14, 0.95) if seen else Color(0.28, 0.08, 0.1, 0.8)
 		draw_rect(Rect2(p, CELL), fill)
 		draw_rect(Rect2(p, CELL), Color(0.75, 0.75, 0.85, 0.6), false, 1.0)
