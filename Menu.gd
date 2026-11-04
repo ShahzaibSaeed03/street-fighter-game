@@ -488,15 +488,22 @@ func _btn(text: String, w: float, h: float, cb: Callable, accent: Color = Color(
 	b.resized.connect(func() -> void: b.pivot_offset = b.size * 0.5)
 	b.mouse_entered.connect(func() -> void: _pop(b, 1.05))
 	b.mouse_exited.connect(func() -> void: _pop(b, 1.0))
-	b.button_down.connect(func() -> void:
-		_pop(b, 0.94)
-		Audio.play("click", -8.0))
-	b.button_up.connect(func() -> void: _pop(b, 1.03 if b.is_hovered() else 1.0))
+	b.button_down.connect(_on_btn_down.bind(b))
+	b.button_up.connect(_on_btn_up.bind(b))
 	if glyph != "":
 		var g := Glyph.new(glyph, Color(0.17, 0.09, 0.02) if fill else accent.lightened(0.2))
 		g.position = Vector2(18.0, (h - 32.0) * 0.5)
 		b.add_child(g)
 	return b
+
+
+func _on_btn_down(b: Button) -> void:
+	_pop(b, 0.94)
+	Audio.play("click", -8.0)
+
+
+func _on_btn_up(b: Button) -> void:
+	_pop(b, 1.03 if b.is_hovered() else 1.0)
 
 
 func _set_speed(i: int) -> void:
@@ -939,6 +946,7 @@ func _build_shop() -> void:
 	_hero.position = Vector2(960, 300)
 	_hero.scale = Vector2(3.6, 3.6)
 	_hero.set("aim_angle", -0.35)
+	_hero.set("shop_spin", true)
 	_stage.add_child(_hero)
 
 

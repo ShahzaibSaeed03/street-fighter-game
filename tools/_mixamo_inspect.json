@@ -1,0 +1,817 @@
+[
+  {
+    "id": "ayaan",
+    "path": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\body.fbx",
+    "ok": true,
+    "mesh_count": 7,
+    "triangle_count": 56258,
+    "armature_count": 1,
+    "armature_name": "Armature",
+    "bone_count": 65,
+    "bones": [
+      "mixamorig7:Hips",
+      "mixamorig7:Spine",
+      "mixamorig7:Spine1",
+      "mixamorig7:Spine2",
+      "mixamorig7:Neck",
+      "mixamorig7:Head",
+      "mixamorig7:HeadTop_End",
+      "mixamorig7:LeftShoulder",
+      "mixamorig7:LeftArm",
+      "mixamorig7:LeftForeArm",
+      "mixamorig7:LeftHand",
+      "mixamorig7:LeftHandThumb1",
+      "mixamorig7:LeftHandThumb2",
+      "mixamorig7:LeftHandThumb3",
+      "mixamorig7:LeftHandThumb4",
+      "mixamorig7:LeftHandIndex1",
+      "mixamorig7:LeftHandIndex2",
+      "mixamorig7:LeftHandIndex3",
+      "mixamorig7:LeftHandIndex4",
+      "mixamorig7:LeftHandMiddle1",
+      "mixamorig7:LeftHandMiddle2",
+      "mixamorig7:LeftHandMiddle3",
+      "mixamorig7:LeftHandMiddle4",
+      "mixamorig7:LeftHandRing1",
+      "mixamorig7:LeftHandRing2",
+      "mixamorig7:LeftHandRing3",
+      "mixamorig7:LeftHandRing4",
+      "mixamorig7:LeftHandPinky1",
+      "mixamorig7:LeftHandPinky2",
+      "mixamorig7:LeftHandPinky3",
+      "mixamorig7:LeftHandPinky4",
+      "mixamorig7:RightShoulder",
+      "mixamorig7:RightArm",
+      "mixamorig7:RightForeArm",
+      "mixamorig7:RightHand",
+      "mixamorig7:RightHandThumb1",
+      "mixamorig7:RightHandThumb2",
+      "mixamorig7:RightHandThumb3",
+      "mixamorig7:RightHandThumb4",
+      "mixamorig7:RightHandIndex1",
+      "mixamorig7:RightHandIndex2",
+      "mixamorig7:RightHandIndex3",
+      "mixamorig7:RightHandIndex4",
+      "mixamorig7:RightHandMiddle1",
+      "mixamorig7:RightHandMiddle2",
+      "mixamorig7:RightHandMiddle3",
+      "mixamorig7:RightHandMiddle4",
+      "mixamorig7:RightHandRing1",
+      "mixamorig7:RightHandRing2",
+      "mixamorig7:RightHandRing3",
+      "mixamorig7:RightHandRing4",
+      "mixamorig7:RightHandPinky1",
+      "mixamorig7:RightHandPinky2",
+      "mixamorig7:RightHandPinky3",
+      "mixamorig7:RightHandPinky4",
+      "mixamorig7:LeftUpLeg",
+      "mixamorig7:LeftLeg",
+      "mixamorig7:LeftFoot",
+      "mixamorig7:LeftToeBase",
+      "mixamorig7:LeftToe_End",
+      "mixamorig7:RightUpLeg",
+      "mixamorig7:RightLeg",
+      "mixamorig7:RightFoot",
+      "mixamorig7:RightToeBase",
+      "mixamorig7:RightToe_End"
+    ],
+    "meshes": [
+      {
+        "name": "Ch08_Body",
+        "verts": 9129,
+        "tris": 18044,
+        "materials": [
+          "Ch08_body"
+        ]
+      },
+      {
+        "name": "Ch08_Pants",
+        "verts": 3118,
+        "tris": 6232,
+        "materials": [
+          "Ch08_body1"
+        ]
+      },
+      {
+        "name": "Ch08_Hoodie",
+        "verts": 6620,
+        "tris": 13234,
+        "materials": [
+          "Ch08_body1"
+        ]
+      },
+      {
+        "name": "Ch08_Eyelashes",
+        "verts": 550,
+        "tris": 704,
+        "materials": [
+          "Ch08_hair"
+        ]
+      },
+      {
+        "name": "Ch08_Hair",
+        "verts": 8299,
+        "tris": 9776,
+        "materials": [
+          "Ch08_hair"
+        ]
+      },
+      {
+        "name": "Ch08_Beard",
+        "verts": 4389,
+        "tris": 4352,
+        "materials": [
+          "Ch08_hair"
+        ]
+      },
+      {
+        "name": "Ch08_Sneakers",
+        "verts": 1958,
+        "tris": 3916,
+        "materials": [
+          "Ch08_body1"
+        ]
+      }
+    ],
+    "materials": [
+      {
+        "name": "Ch08_body",
+        "textures": [
+          {
+            "image": "file1",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file3",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Normal.png",
+            "packed": true
+          },
+          {
+            "image": "file5",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Specular.png",
+            "packed": true
+          },
+          {
+            "image": "file6",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Glossiness.png",
+            "packed": true
+          }
+        ]
+      },
+      {
+        "name": "Ch08_body1",
+        "textures": [
+          {
+            "image": "file11",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file12",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Normal.png",
+            "packed": true
+          },
+          {
+            "image": "file14",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Specular.png",
+            "packed": true
+          },
+          {
+            "image": "file13",
+            "size": [
+              4096,
+              4096
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Glossiness.png",
+            "packed": true
+          }
+        ]
+      },
+      {
+        "name": "Ch08_hair",
+        "textures": [
+          {
+            "image": "file9",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1003_Diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file10",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1003_Normal.png",
+            "packed": true
+          },
+          {
+            "image": "file9.002",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1003_Diffuse.png",
+            "packed": true
+          }
+        ]
+      }
+    ],
+    "images": [
+      {
+        "name": "file1",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Diffuse.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file10",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1003_Normal.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file11",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Diffuse.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file12",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Normal.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file13",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Glossiness.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file14",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1002_Specular.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file3",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Normal.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file5",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Specular.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file6",
+        "size": [
+          4096,
+          4096
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1001_Glossiness.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file9",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1003_Diffuse.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file9.001",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1003_Diffuse.png",
+        "packed": true,
+        "users": 0
+      },
+      {
+        "name": "file9.002",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\ayaan\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_ffcc1bd0-1b7c-4007-b391-c9f7867a261c.fbm\\Ch08_1003_Diffuse.png",
+        "packed": true,
+        "users": 1
+      }
+    ]
+  },
+  {
+    "id": "zara",
+    "path": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\body.fbx",
+    "ok": true,
+    "mesh_count": 4,
+    "triangle_count": 20526,
+    "armature_count": 1,
+    "armature_name": "Armature",
+    "bone_count": 67,
+    "bones": [
+      "mixamorig:Hips",
+      "mixamorig:Spine",
+      "mixamorig:Spine1",
+      "mixamorig:Spine2",
+      "mixamorig:Neck",
+      "mixamorig:Head",
+      "mixamorig:HeadTop_End",
+      "mixamorig:LeftEye",
+      "mixamorig:RightEye",
+      "mixamorig:LeftShoulder",
+      "mixamorig:LeftArm",
+      "mixamorig:LeftForeArm",
+      "mixamorig:LeftHand",
+      "mixamorig:LeftHandThumb1",
+      "mixamorig:LeftHandThumb2",
+      "mixamorig:LeftHandThumb3",
+      "mixamorig:LeftHandThumb4",
+      "mixamorig:LeftHandIndex1",
+      "mixamorig:LeftHandIndex2",
+      "mixamorig:LeftHandIndex3",
+      "mixamorig:LeftHandIndex4",
+      "mixamorig:LeftHandMiddle1",
+      "mixamorig:LeftHandMiddle2",
+      "mixamorig:LeftHandMiddle3",
+      "mixamorig:LeftHandMiddle4",
+      "mixamorig:LeftHandRing1",
+      "mixamorig:LeftHandRing2",
+      "mixamorig:LeftHandRing3",
+      "mixamorig:LeftHandRing4",
+      "mixamorig:LeftHandPinky1",
+      "mixamorig:LeftHandPinky2",
+      "mixamorig:LeftHandPinky3",
+      "mixamorig:LeftHandPinky4",
+      "mixamorig:RightShoulder",
+      "mixamorig:RightArm",
+      "mixamorig:RightForeArm",
+      "mixamorig:RightHand",
+      "mixamorig:RightHandThumb1",
+      "mixamorig:RightHandThumb2",
+      "mixamorig:RightHandThumb3",
+      "mixamorig:RightHandThumb4",
+      "mixamorig:RightHandIndex1",
+      "mixamorig:RightHandIndex2",
+      "mixamorig:RightHandIndex3",
+      "mixamorig:RightHandIndex4",
+      "mixamorig:RightHandMiddle1",
+      "mixamorig:RightHandMiddle2",
+      "mixamorig:RightHandMiddle3",
+      "mixamorig:RightHandMiddle4",
+      "mixamorig:RightHandRing1",
+      "mixamorig:RightHandRing2",
+      "mixamorig:RightHandRing3",
+      "mixamorig:RightHandRing4",
+      "mixamorig:RightHandPinky1",
+      "mixamorig:RightHandPinky2",
+      "mixamorig:RightHandPinky3",
+      "mixamorig:RightHandPinky4",
+      "mixamorig:LeftUpLeg",
+      "mixamorig:LeftLeg",
+      "mixamorig:LeftFoot",
+      "mixamorig:LeftToeBase",
+      "mixamorig:LeftToe_End",
+      "mixamorig:RightUpLeg",
+      "mixamorig:RightLeg",
+      "mixamorig:RightFoot",
+      "mixamorig:RightToeBase",
+      "mixamorig:RightToe_End"
+    ],
+    "meshes": [
+      {
+        "name": "Erika_Archer_Body_Mesh",
+        "verts": 3465,
+        "tris": 6330,
+        "materials": [
+          "Akai_MAT"
+        ]
+      },
+      {
+        "name": "Erika_Archer_Eyes_Mesh",
+        "verts": 764,
+        "tris": 1520,
+        "materials": [
+          "EyeSpec_MAT"
+        ]
+      },
+      {
+        "name": "Erika_Archer_Eyelashes_Mesh",
+        "verts": 6427,
+        "tris": 12570,
+        "materials": [
+          "Body_MAT"
+        ]
+      },
+      {
+        "name": "Erika_Archer_Clothes_Mesh",
+        "verts": 98,
+        "tris": 106,
+        "materials": [
+          "eyelash_MAT"
+        ]
+      }
+    ],
+    "materials": [
+      {
+        "name": "Akai_MAT",
+        "textures": [
+          {
+            "image": "MOBU_file1",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\Erika_Archer_Clothes_diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file2",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\Erika_Archer_Clothes_normal.png",
+            "packed": true
+          }
+        ]
+      },
+      {
+        "name": "Body_MAT",
+        "textures": [
+          {
+            "image": "file40",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_Body_diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file3",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_StdNM.png",
+            "packed": true
+          }
+        ]
+      },
+      {
+        "name": "eyelash_MAT",
+        "textures": [
+          {
+            "image": "file41",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_eyelash_diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file41.002",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_eyelash_diffuse.png",
+            "packed": true
+          }
+        ]
+      },
+      {
+        "name": "EyeSpec_MAT",
+        "textures": [
+          {
+            "image": "file40",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_Body_diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file3",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_StdNM.png",
+            "packed": true
+          }
+        ]
+      }
+    ],
+    "images": [
+      {
+        "name": "file2",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\Erika_Archer_Clothes_normal.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file3",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_StdNM.png",
+        "packed": true,
+        "users": 2
+      },
+      {
+        "name": "file40",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_Body_diffuse.png",
+        "packed": true,
+        "users": 2
+      },
+      {
+        "name": "file41",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_eyelash_diffuse.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file41.001",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_eyelash_diffuse.png",
+        "packed": true,
+        "users": 0
+      },
+      {
+        "name": "file41.002",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\FemaleFitA_eyelash_diffuse.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "MOBU_file1",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\zara\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_1da9789f-9955-4f22-8181-53d45f8202dc.fbm\\Erika_Archer_Clothes_diffuse.png",
+        "packed": true,
+        "users": 1
+      }
+    ]
+  },
+  {
+    "id": "kabir",
+    "path": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\kabir\\body.fbx",
+    "ok": true,
+    "mesh_count": 2,
+    "triangle_count": 14660,
+    "armature_count": 1,
+    "armature_name": "Armature",
+    "bone_count": 67,
+    "bones": [
+      "mixamorig:Hips",
+      "mixamorig:Spine",
+      "mixamorig:Spine1",
+      "mixamorig:Spine2",
+      "mixamorig:Neck",
+      "mixamorig:Head",
+      "mixamorig:HeadTop_End",
+      "mixamorig:LeftEye",
+      "mixamorig:RightEye",
+      "mixamorig:LeftShoulder",
+      "mixamorig:LeftArm",
+      "mixamorig:LeftForeArm",
+      "mixamorig:LeftHand",
+      "mixamorig:LeftHandThumb1",
+      "mixamorig:LeftHandThumb2",
+      "mixamorig:LeftHandThumb3",
+      "mixamorig:LeftHandThumb4",
+      "mixamorig:LeftHandIndex1",
+      "mixamorig:LeftHandIndex2",
+      "mixamorig:LeftHandIndex3",
+      "mixamorig:LeftHandIndex4",
+      "mixamorig:LeftHandMiddle1",
+      "mixamorig:LeftHandMiddle2",
+      "mixamorig:LeftHandMiddle3",
+      "mixamorig:LeftHandMiddle4",
+      "mixamorig:LeftHandRing1",
+      "mixamorig:LeftHandRing2",
+      "mixamorig:LeftHandRing3",
+      "mixamorig:LeftHandRing4",
+      "mixamorig:LeftHandPinky1",
+      "mixamorig:LeftHandPinky2",
+      "mixamorig:LeftHandPinky3",
+      "mixamorig:LeftHandPinky4",
+      "mixamorig:RightShoulder",
+      "mixamorig:RightArm",
+      "mixamorig:RightForeArm",
+      "mixamorig:RightHand",
+      "mixamorig:RightHandThumb1",
+      "mixamorig:RightHandThumb2",
+      "mixamorig:RightHandThumb3",
+      "mixamorig:RightHandThumb4",
+      "mixamorig:RightHandIndex1",
+      "mixamorig:RightHandIndex2",
+      "mixamorig:RightHandIndex3",
+      "mixamorig:RightHandIndex4",
+      "mixamorig:RightHandMiddle1",
+      "mixamorig:RightHandMiddle2",
+      "mixamorig:RightHandMiddle3",
+      "mixamorig:RightHandMiddle4",
+      "mixamorig:RightHandRing1",
+      "mixamorig:RightHandRing2",
+      "mixamorig:RightHandRing3",
+      "mixamorig:RightHandRing4",
+      "mixamorig:RightHandPinky1",
+      "mixamorig:RightHandPinky2",
+      "mixamorig:RightHandPinky3",
+      "mixamorig:RightHandPinky4",
+      "mixamorig:LeftUpLeg",
+      "mixamorig:LeftLeg",
+      "mixamorig:LeftFoot",
+      "mixamorig:LeftToeBase",
+      "mixamorig:LeftToe_End",
+      "mixamorig:RightUpLeg",
+      "mixamorig:RightLeg",
+      "mixamorig:RightFoot",
+      "mixamorig:RightToeBase",
+      "mixamorig:RightToe_End"
+    ],
+    "meshes": [
+      {
+        "name": "Paladin_J_Nordstrom_Helmet",
+        "verts": 7093,
+        "tris": 13212,
+        "materials": [
+          "Paladin_MAT"
+        ]
+      },
+      {
+        "name": "Paladin_J_Nordstrom",
+        "verts": 732,
+        "tris": 1448,
+        "materials": [
+          "Paladin_MAT"
+        ]
+      }
+    ],
+    "materials": [
+      {
+        "name": "Paladin_MAT",
+        "textures": [
+          {
+            "image": "file1",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\kabir\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_0acc0ff0-2bed-4845-bde7-1f0261edfadf.fbm\\Paladin_diffuse.png",
+            "packed": true
+          },
+          {
+            "image": "file4",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\kabir\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_0acc0ff0-2bed-4845-bde7-1f0261edfadf.fbm\\Paladin_normal.png",
+            "packed": true
+          },
+          {
+            "image": "file3",
+            "size": [
+              2048,
+              2048
+            ],
+            "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\kabir\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_0acc0ff0-2bed-4845-bde7-1f0261edfadf.fbm\\Paladin_specular.png",
+            "packed": true
+          }
+        ]
+      }
+    ],
+    "images": [
+      {
+        "name": "file1",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\kabir\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_0acc0ff0-2bed-4845-bde7-1f0261edfadf.fbm\\Paladin_diffuse.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file3",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\kabir\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_0acc0ff0-2bed-4845-bde7-1f0261edfadf.fbm\\Paladin_specular.png",
+        "packed": true,
+        "users": 1
+      },
+      {
+        "name": "file4",
+        "size": [
+          2048,
+          2048
+        ],
+        "filepath": "W:\\street-fighter-game\\assets\\models\\heroes\\mixamo\\kabir\\..\\..\\..\\..\\home\\app\\mixamo-mini\\tmp\\skins_0acc0ff0-2bed-4845-bde7-1f0261edfadf.fbm\\Paladin_normal.png",
+        "packed": true,
+        "users": 1
+      }
+    ]
+  }
+]

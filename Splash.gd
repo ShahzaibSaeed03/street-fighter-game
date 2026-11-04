@@ -27,13 +27,22 @@ var _ready_time: float = -1.0
 var _leaving: bool = false
 var _leave_t: float = 0.0
 var _tip: int = 0
+var _menu_scene: PackedScene = null
 
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_tip = randi() % TIPS.size()
-	ResourceLoader.load_threaded_request(MENU)
+	# Sync load (deferred): threaded compile of Menu.gd can miss Autoload globals (Audio).
+	call_deferred("_load_menu_sync")
+
+
+func _load_menu_sync() -> void:
+	_menu_scene = load(MENU) as PackedScene
+	_loaded = _menu_scene != null
+	if not _loaded:
+		push_error("Failed to load Menu.tscn")
 	var vs: Vector2 = get_viewport_rect().size
 	for i in 70:
 		_embers.append({"p": Vector2(randf() * vs.x, randf() * vs.y), "v": Vector2(randf_range(-8.0, 8.0), randf_range(-60.0, -14.0)),
@@ -81,13 +90,8 @@ func _process(delta: float) -> void:
 			var sp: float = randf_range(140.0, 520.0)
 			_sparks.append({"p": c, "v": Vector2.from_angle(a) * sp, "life": randf_range(0.45, 1.0), "w": randf_range(1.5, 3.2)})
 
-	# real loading progress, paced so the bar always takes a moment to fill
-	var info: Array = []
-	var status: int = ResourceLoader.load_threaded_get_status(MENU, info)
-	var real: float = float(info[0]) if info.size() > 0 else 0.0
-	if status == ResourceLoader.THREAD_LOAD_LOADED:
-		real = 1.0
-		_loaded = true
+	# Loading bar paced for feel; menu is already sync-loaded (or pending deferred).
+	var real: float = 1.0 if _loaded else clampf((_t - 0.5) / 1.5, 0.0, 0.85)
 	var pace: float = clampf((_t - 2.3) / 2.0, 0.0, 1.0)
 	_progress = move_toward(_progress, minf(real, pace), delta * 0.7)
 	if _progress >= 0.999 and _ready_time < 0.0:
@@ -103,8 +107,8 @@ func _process(delta: float) -> void:
 	if _leaving:
 		_leave_t += delta
 		if _leave_t >= 0.45:
-			var scene := ResourceLoader.load_threaded_get(MENU) as PackedScene
-			get_tree().change_scene_to_packed(scene)
+			if _menu_scene != null:
+				get_tree().change_scene_to_packed(_menu_scene)
 			set_process(false)
 	queue_redraw()
 
