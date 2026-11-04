@@ -20,24 +20,35 @@ TOWN = KITS / "kenney_fantasy-town-kit_2.0" / "Models" / "GLB format"
 NATURE = KITS / "kenney_nature-kit" / "Models" / "GLTF format"
 GRAVE = KITS / "kenney_graveyard-kit_5.0" / "Models" / "GLB format"
 
-# world, filename, source, triangle cap, target height in metres
+# world, filename, source, triangle cap, target height in metres.
+# Focal wall pieces stay under 500 tris and are not used for every segment.
 JOBS = [
-    ("emberfall", "crate", PIRATE / "crate.glb", 140, 1.15),
-    ("emberfall", "barrel", PIRATE / "barrel.glb", 140, 1.25),
-    ("emberfall", "pillar", TOWN / "pillar-stone.glb", 160, 2.4),
-    ("emberfall", "statue", NATURE / "statue_columnDamaged.glb", 180, 2.3),
-    ("emberfall", "rubble", CASTLE / "rocks-small.glb", 120, 0.7),
-    ("emberfall", "banner", CASTLE / "flag-banner-short.glb", 100, 2.4),
-    ("whispering_mire", "log", CASTLE / "tree-log.glb", 120, 0.85),
-    ("whispering_mire", "swamp_tree", TOWN / "tree-crooked.glb", 220, 3.6),
-    ("whispering_mire", "grave", GRAVE / "grave.glb", 140, 1.4),
-    ("whispering_mire", "gravestone", GRAVE / "gravestone-broken.glb", 100, 1.5),
-    ("whispering_mire", "reeds", NATURE / "plant_bush.glb", 80, 1.1),
-    ("crystal_deep", "cave_rock", CASTLE / "rocks-large.glb", 140, 1.3),
-    ("crystal_deep", "pillar", TOWN / "pillar-stone.glb", 160, 2.4),
-    ("crystal_deep", "statue", NATURE / "statue_obelisk.glb", 140, 2.2),
-    ("emberfall", "buttress", TOWN / "wall-block.glb", 80, 2.2),
-    ("whispering_mire", "roots", CASTLE / "tree-trunk.glb", 100, 1.1),
+    ("emberfall", "crate", PIRATE / "crate.glb", 420, 1.15),
+    ("emberfall", "barrel", PIRATE / "barrel.glb", 420, 1.25),
+    ("emberfall", "pillar", TOWN / "pillar-stone.glb", 420, 2.3),
+    ("emberfall", "statue", NATURE / "statue_columnDamaged.glb", 500, 2.2),
+    ("emberfall", "rubble", CASTLE / "rocks-small.glb", 320, 0.85),
+    ("emberfall", "banner", CASTLE / "flag-banner-short.glb", 280, 2.3),
+    ("emberfall", "doorway", CASTLE / "wall-doorway.glb", 500, 2.7),
+    ("emberfall", "corner_tower", CASTLE / "wall-corner.glb", 500, 2.8),
+    ("emberfall", "arch", CASTLE / "tower-square-arch.glb", 500, 2.6),
+    ("whispering_mire", "log", CASTLE / "tree-log.glb", 360, 0.9),
+    ("whispering_mire", "swamp_tree", TOWN / "tree-crooked.glb", 500, 3.4),
+    ("whispering_mire", "grave", GRAVE / "grave.glb", 400, 1.35),
+    ("whispering_mire", "gravestone", GRAVE / "gravestone-broken.glb", 320, 1.45),
+    ("whispering_mire", "reeds", NATURE / "grass_large.glb", 280, 1.15),
+    ("whispering_mire", "plants", NATURE / "plant_flatTall.glb", 280, 1.35),
+    ("whispering_mire", "roots", CASTLE / "tree-trunk.glb", 360, 1.15),
+    ("whispering_mire", "glow_mushroom", NATURE / "mushroom_redGroup.glb", 400, 1.25),
+    ("whispering_mire", "doorway", CASTLE / "wall-doorway.glb", 500, 2.7),
+    ("whispering_mire", "corner_tower", CASTLE / "wall-corner.glb", 500, 2.8),
+    ("whispering_mire", "arch", CASTLE / "tower-square-arch.glb", 500, 2.6),
+    ("crystal_deep", "cave_rock", CASTLE / "rocks-large.glb", 400, 1.4),
+    ("crystal_deep", "pillar", TOWN / "pillar-stone.glb", 420, 2.3),
+    ("crystal_deep", "statue", NATURE / "statue_obelisk.glb", 400, 2.3),
+    ("crystal_deep", "doorway", CASTLE / "wall-doorway.glb", 500, 2.7),
+    ("crystal_deep", "corner_tower", CASTLE / "wall-corner.glb", 500, 2.8),
+    ("crystal_deep", "arch", CASTLE / "tower-square-arch.glb", 500, 2.6),
 ]
 
 
@@ -118,14 +129,7 @@ def prep(src: Path, dest: Path, target: int, height: float):
 
 
 def main():
-    # Nature kit names vary. Fall back if plant_bush is absent.
-    bush = list((NATURE).glob("plant_bush*.glb"))
-    jobs = []
     for world, name, src, target, height in JOBS:
-        if name == "reeds" and bush:
-            src = bush[0]
-        jobs.append((world, name, src, target, height))
-    for world, name, src, target, height in jobs:
         prep(src, OUT / world / f"{name}.glb", target, height)
     log("KENNEY PROPS DONE")
 

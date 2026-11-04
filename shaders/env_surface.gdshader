@@ -44,9 +44,12 @@ void fragment() {
 	ROUGHNESS = mix(rough, 0.16, wet * wet_strength);
 	NORMAL_MAP = texture(normal_tex, uv).rgb;
 	NORMAL_MAP_DEPTH = 0.65;
-	float along = wpos.x + wpos.z;
-	float n = sin(along * 1.7 + wpos.y * 0.6) * sin(wpos.y * 2.8 + along * 0.35);
-	float n2 = sin(along * 0.9 + 2.0) * sin(wpos.y * 4.1 + 0.7);
-	float crack = max(smoothstep(0.62, 0.9, n), smoothstep(0.72, 0.95, n2));
-	EMISSION = vein_color * crack * vein;
+	float along = wpos.x * 0.41 + wpos.z * 0.27;
+	float wander = sin(along * 3.1) * 0.12;
+	float band = abs(fract(wpos.y * 0.48 + wander) - 0.5);
+	float thin = 1.0 - smoothstep(0.008, 0.028, band);
+	float band2 = abs(fract(along * 0.62 + wpos.y * 0.04) - 0.5);
+	float thin2 = 1.0 - smoothstep(0.006, 0.02, band2);
+	col *= mix(1.0, 0.42, thin2 * top_rim);
+	EMISSION = vein_color * max(thin, thin2) * vein;
 }

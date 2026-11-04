@@ -39,8 +39,9 @@ const WORLDS := {
 		"wall_rough": "res://assets/textures/env_cc0/polyhaven_w1_emberfall/volcanic_herringbone_01/volcanic_herringbone_01_Rough_1k.jpg",
 		"wall_normal": "res://assets/textures/env_cc0/polyhaven_w1_emberfall/volcanic_herringbone_01/volcanic_herringbone_01_nor_gl_1k.jpg",
 		"wall_tint": Color(0.42, 0.2, 0.12),
+		"hdri": "res://assets/textures/env_cc0/hdri/cave_wall_1k.hdr",
 		"wet_strength": 0.12,
-		"dressing": ["torch", "crate", "barrel", "skull", "banner", "chains", "rubble", "bone_pile", "weapon_rack", "statue", "pillar", "buttress"],
+		"dressing": ["crate", "barrel", "pillar", "statue", "rubble", "banner", "doorway", "corner_tower", "arch"],
 		"species": ["imp", "hound", "bat", "knight", "ghoul", "golem", "ghost"],
 	},
 	"whispering_mire": {
@@ -75,8 +76,9 @@ const WORLDS := {
 		"wall_rough": "res://assets/textures/env_cc0/polyhaven_w2_whispering_mire/brick_moss_001/brick_moss_001_Rough_1k.jpg",
 		"wall_normal": "res://assets/textures/env_cc0/polyhaven_w2_whispering_mire/brick_moss_001/brick_moss_001_nor_gl_1k.jpg",
 		"wall_tint": Color(0.55, 0.68, 0.46),
+		"hdri": "res://assets/textures/env_cc0/hdri/mossy_forest_1k.hdr",
 		"wet_strength": 0.45,
-		"dressing": ["glow_mushroom", "log", "reeds", "grave", "gravestone", "roots", "cobweb", "cage", "skull", "log"],
+		"dressing": ["glow_mushroom", "log", "reeds", "plants", "grave", "gravestone", "roots", "swamp_tree", "hanging_moss", "doorway", "corner_tower", "arch"],
 		"species": ["slime", "shroom", "wasp", "spider", "hound", "golem", "ghost"],
 	},
 	"crystal_deep": {
@@ -111,8 +113,9 @@ const WORLDS := {
 		"wall_rough": "res://assets/textures/env_cc0/polyhaven_w3_crystal_deep/rock_06/rock_06_Rough_1k.jpg",
 		"wall_normal": "res://assets/textures/env_cc0/polyhaven_w3_crystal_deep/rock_06/rock_06_nor_gl_1k.jpg",
 		"wall_tint": Color(0.5, 0.42, 0.68),
+		"hdri": "res://assets/textures/env_cc0/hdri/cave_wall_1k.hdr",
 		"wet_strength": 0.22,
-		"dressing": ["crystal_cluster", "crystal_cyan", "crystal_pink", "stalactite", "geode", "cave_rock", "shards", "chains", "statue", "pillar"],
+		"dressing": ["crystal_cluster", "crystal_cyan", "crystal_pink", "stalactite", "cave_rock", "statue", "pillar", "doorway", "corner_tower", "arch"],
 		"species": ["crab", "golem", "bat", "wraith", "hound", "scorpion"],
 	},
 }
