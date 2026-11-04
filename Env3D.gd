@@ -75,9 +75,13 @@ func _ensure_viewport() -> void:
 
 func _load_kit(kit_dir: String) -> bool:
 	_meshes.clear()
-	var needed := ["floor_a", "wall_straight", "pillar", "rubble", "brazier", "lava_plane"]
-	for n in needed:
-		var path := kit_dir + n + ".glb"
+	var dir := DirAccess.open(kit_dir)
+	if dir == null:
+		return false
+	for fname in dir.get_files():
+		if not String(fname).ends_with(".glb"):
+			continue
+		var path := kit_dir + fname
 		if not ResourceLoader.exists(path):
 			continue
 		var packed: PackedScene = load(path)
@@ -86,20 +90,8 @@ func _load_kit(kit_dir: String) -> bool:
 		var inst := packed.instantiate()
 		var mesh := _find_mesh(inst)
 		if mesh:
-			_meshes[n] = mesh
+			_meshes[String(fname).get_basename()] = mesh
 		inst.free()
-	for n in ["floor_b", "floor_c", "bone_pile", "cracked_statue", "ash_heap", "ember_rock", "gate"]:
-		var path2 := kit_dir + n + ".glb"
-		if not ResourceLoader.exists(path2):
-			continue
-		var packed2: PackedScene = load(path2)
-		if packed2 == null:
-			continue
-		var inst2 := packed2.instantiate()
-		var mesh2 := _find_mesh(inst2)
-		if mesh2:
-			_meshes[n] = mesh2
-		inst2.free()
 	return _meshes.has("floor_a") and _meshes.has("wall_straight")
 
 
@@ -198,6 +190,8 @@ func _build_from_dungeon() -> void:
 	_place_props()
 	_place_lava()
 	_place_torches()
+	_place_outdoor()
+	_place_boss_arena()
 
 
 func _spawn_prop(piece: String, pos: Vector2, yaw: float = 0.0, scl: float = 1.0) -> void:
@@ -219,7 +213,10 @@ func _place_props() -> void:
 		var r: Rect2 = ob["r"]
 		var kind: String = String(ob.get("k", "crate"))
 		var piece := "pillar" if kind.find("pillar") >= 0 else "rubble"
-		if piece == "rubble" and _meshes.has("ember_rock") and randf() < 0.25:
+		var accent: String = String(_preset.get("accent_piece", ""))
+		if piece == "rubble" and accent != "" and _meshes.has(accent) and randf() < 0.35:
+			piece = accent
+		elif piece == "rubble" and _meshes.has("ember_rock") and randf() < 0.25:
 			piece = "ember_rock"
 		if randf() > dens:
 			continue
@@ -232,6 +229,52 @@ func _place_props() -> void:
 			_spawn_prop("cracked_statue", c + Vector2(randf_range(-200, 200), randf_range(-120, 120)), randf() * TAU, 1.1)
 		if randf() < 0.4 * dens:
 			_spawn_prop("ash_heap", c + Vector2(randf_range(-220, 220), randf_range(-140, 140)), 0.0, randf_range(0.8, 1.3))
+
+
+func _place_outdoor() -> void:
+	if not bool(_preset.get("outdoor", false)):
+		return
+	var piece: String = String(_preset.get("outdoor_piece", ""))
+	if piece == "" or not _meshes.has(piece):
+		return
+	if not _dungeon.has_method("world_bounds"):
+		return
+	var wb: Rect2 = _dungeon.world_bounds()
+	# Open fringe outside the dungeon rooms (swamp trees or cave crystals).
+	var step := 220.0
+	var x := wb.position.x - 180.0
+	while x < wb.end.x + 180.0:
+		_spawn_prop(piece, Vector2(x, wb.position.y - 160.0), randf() * TAU, randf_range(0.8, 1.3))
+		_spawn_prop(piece, Vector2(x, wb.end.y + 80.0), randf() * TAU, randf_range(0.8, 1.3))
+		x += step
+	var y := wb.position.y
+	while y < wb.end.y:
+		_spawn_prop(piece, Vector2(wb.position.x - 140.0, y), randf() * TAU, randf_range(0.8, 1.2))
+		_spawn_prop(piece, Vector2(wb.end.x + 60.0, y), randf() * TAU, randf_range(0.8, 1.2))
+		y += step
+	# Water / extra crystals in the outdoor band for mire / crystal.
+	if _meshes.has("swamp_water"):
+		_spawn_prop("swamp_water", wb.position + Vector2(-90, wb.size.y * 0.5), 0.0, 2.2)
+		_spawn_prop("swamp_water", Vector2(wb.end.x + 40.0, wb.position.y + wb.size.y * 0.4), 0.0, 1.8)
+
+
+func _place_boss_arena() -> void:
+	if not bool(_preset.get("boss_arena", false)):
+		return
+	var piece: String = String(_preset.get("boss_piece", ""))
+	if piece == "" or not _meshes.has(piece) or not _dungeon.has_method("boss_id"):
+		return
+	var bid: String = String(_dungeon.boss_id())
+	if bid == "":
+		return
+	var c: Vector2 = _dungeon.room_center(bid)
+	_spawn_prop(piece, c + Vector2(180, 0), 0.0, 1.4)
+	_spawn_prop(piece, c + Vector2(-160, 80), 0.4, 1.1)
+	var accent: String = String(_preset.get("accent_piece", ""))
+	if accent != "" and _meshes.has(accent):
+		for i in 4:
+			var ang := TAU * float(i) / 4.0
+			_spawn_prop(accent, c + Vector2(cos(ang), sin(ang)) * 220.0, ang, 1.2)
 
 
 func _place_lava() -> void:
@@ -286,7 +329,7 @@ func _setup_weather() -> void:
 	mat.gravity = Vector3(0, 0.12, 0)
 	mat.scale_min = 0.04
 	mat.scale_max = 0.1
-	mat.color = Color(1.0, 0.4, 0.08, 0.8)
+	mat.color = _preset.get("particle_color", Color(1.0, 0.4, 0.08, 0.8))
 	_weather.process_material = mat
 	var draw := SphereMesh.new()
 	draw.radius = 0.05
