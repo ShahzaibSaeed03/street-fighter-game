@@ -787,8 +787,11 @@ func _process(delta: float) -> void:
 		_vignette_mat.set_shader_parameter("tint", Color(0.8, 0.0, 0.0, 1.0))
 		_vignette_mat.set_shader_parameter("strength", 0.55 + 0.35 * k)
 	else:
-		_vignette_mat.set_shader_parameter("tint", Color(0.0, 0.0, 0.0, 1.0))
-		_vignette_mat.set_shader_parameter("strength", 0.6)
+		var vig := Color(0.05, 0.02, 0.02, 1.0)
+		if _env3d and _env3d.has_method("grade_tint"):
+			vig = _env3d.grade_tint()
+		_vignette_mat.set_shader_parameter("tint", vig)
+		_vignette_mat.set_shader_parameter("strength", 0.34)
 
 
 func _to_menu() -> void:
