@@ -24,6 +24,7 @@ config/icon="res://icons/icon.png"
 [autoload]
 
 Audio="*res://Audio.gd"
+EnemyModels="*res://EnemyModels.gd"
 
 [display]
 

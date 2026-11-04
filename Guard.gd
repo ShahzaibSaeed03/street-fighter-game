@@ -10,9 +10,8 @@ extends CharacterBody2D
 signal died(guard: Node2D, stealth: bool)
 
 const Fx := preload("res://Fx.gd")
-const ArtScript := preload("res://EnemyArt.gd")
 const HEART_DROP_CHANCE := 0.25
-const CreatureScript := preload("res://CreatureArt.gd")
+const EnemyLookScript := preload("res://EnemyLook.gd")
 const ProjScript := preload("res://Projectile.gd")
 const LootScript := preload("res://Loot.gd")
 const WALL_MASK := 4
@@ -219,16 +218,14 @@ func _ready() -> void:
 	add_child(cs)
 
 	art = Node2D.new()
-	if species == "ghoul":
-		art.set_script(ArtScript)
-	else:
-		art.set_script(CreatureScript)
-		art.set("species", species)
+	art.set_script(EnemyLookScript)
+	art.set("species", species)
+	art.set("is_boss", is_boss)
 	add_child(art)
 	art.setup(tier)
 	art.aim_angle = facing_angle
 	if is_boss:
-		art.scale = Vector2(1.5, 1.5)
+		art.scale = Vector2(1.6, 1.6)
 	elif kind == "brute":
 		art.scale = Vector2(1.3, 1.3)
 	elif kind == "archer":
@@ -333,6 +330,12 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 	art.aim_angle = facing_angle
+	# Drive 3D anims without changing AI: move from velocity, attack when chasing in melee range.
+	art.move_amount = velocity.length() / maxf(chase_speed, 1.0)
+	if state == S.CHASE and _player_alive():
+		art.attacking = global_position.distance_to(_player.global_position) < 70.0
+	else:
+		art.attacking = false
 	_build_cone()
 	queue_redraw()
 
@@ -656,6 +659,9 @@ func _die(root: Node, dir: Vector2, stealth: bool) -> void:
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
 	art.modulate = Color.WHITE
+	art.dying = true
+	art.move_amount = 0.0
+	art.attacking = false
 	remove_from_group("enemies")
 	$CollisionShape2D.set_deferred("disabled", true)
 	died.emit(self, stealth)
@@ -674,8 +680,8 @@ func _die(root: Node, dir: Vector2, stealth: bool) -> void:
 		root.call_deferred("add_child", heart)
 
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(art, "scale", art.scale * Vector2(1.35, 0.35), 0.22).set_ease(Tween.EASE_OUT)
-	tw.tween_property(art, "modulate:a", 0.0, 0.22)
+	tw.tween_property(art, "scale", art.scale * Vector2(1.35, 0.35), 0.35).set_ease(Tween.EASE_OUT)
+	tw.tween_property(art, "modulate:a", 0.0, 0.35)
 	tw.chain().tween_callback(queue_free)
 
 
