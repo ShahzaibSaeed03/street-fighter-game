@@ -30,6 +30,8 @@ var _sky_top: Color = Color(0.05, 0.05, 0.1)
 var _sky_bot: Color = Color(0.2, 0.2, 0.3)
 var _ground: Color = Color(0.15, 0.15, 0.2)
 var _accent: Color = Color(1.0, 0.8, 0.4)
+var _hero_side: Texture2D = null
+var _hero_side_id: String = ""
 
 
 func setup(level_idx: int, scene_data: Dictionary) -> void:
@@ -338,8 +340,19 @@ func _enemy_at(x: float, y: float, face: float, col: Color, sc: float) -> void:
 	_draw_enemy(col, sc)
 
 
+func _ensure_hero_side() -> void:
+	SaveScript.ensure()
+	var hid: String = String(SaveScript.equipped.get("hero", "ayaan"))
+	if hid == _hero_side_id and _hero_side != null:
+		return
+	_hero_side_id = hid
+	var path := "res://assets/heroes/%s_side.png" % hid
+	_hero_side = load(path) if ResourceLoader.exists(path) else null
+
+
 ## pose: idle, walk, run, reach, kneel
 func _draw_hero(pose: String) -> void:
+	_ensure_hero_side()
 	var moving: bool = pose == "run" or pose == "walk"
 	var sw: float = 0.0
 	var bob: float = 1.2 * sin(_time * 2.0)
@@ -349,31 +362,37 @@ func _draw_hero(pose: String) -> void:
 		bob = absf(sin(_time * sp)) * (4.0 if pose == "run" else 3.0)
 	var by: float = 16.0 if pose == "kneel" else 0.0
 	by -= bob
+	if _hero_side != null:
+		var sz := _hero_side.get_size()
+		var sc := 1.15 if pose != "kneel" else 1.02
+		# Feet sit near local y=0 (same as procedural hero). _place() already applied face/scale.
+		var origin := Vector2(-sz.x * 0.5 * sc + sw * 2.0, -sz.y * sc + 8.0 + by)
+		draw_texture_rect(_hero_side, Rect2(origin, sz * sc), false)
+		return
+	_draw_hero_procedural(pose, sw, by)
+
+
+func _draw_hero_procedural(pose: String, sw: float, by: float) -> void:
 	var steel := Color(0.55, 0.65, 0.85)
 	var steel_d := Color(0.40, 0.48, 0.68)
 	var skin := Color(0.95, 0.78, 0.62)
-	# cape streams behind him
-	var flap: float = sin(_time * (9.0 if moving else 2.5))
+	var flap: float = sin(_time * 2.5)
 	draw_colored_polygon(PackedVector2Array([Vector2(-6, -76 + by), Vector2(-40 - flap * 5.0 - sw * 4.0, -44 + by), Vector2(-34 - flap * 7.0, -20 + by), Vector2(-4, -30 + by)]), Color(0.72, 0.1, 0.16))
 	draw_colored_polygon(PackedVector2Array([Vector2(-6, -76 + by), Vector2(-24, -58 + by), Vector2(-4, -30 + by)]), Color(0.52, 0.07, 0.12))
-	# legs with boots
 	var l1 := Vector2(-8 + sw * 11.0, 0)
 	var l2 := Vector2(8 - sw * 11.0, 0)
 	draw_line(Vector2(-4, -38 + by), l1 + Vector2(0, -4), Color(0.25, 0.28, 0.4), 6.0)
 	draw_line(Vector2(4, -38 + by), l2 + Vector2(0, -4), Color(0.30, 0.33, 0.46), 6.0)
 	draw_line(l1 + Vector2(-2, -1), l1 + Vector2(6, -1), Color(0.12, 0.1, 0.12), 5.0)
 	draw_line(l2 + Vector2(-2, -1), l2 + Vector2(6, -1), Color(0.12, 0.1, 0.12), 5.0)
-	# torso with shading, belt and shoulder pad
 	draw_rect(Rect2(-12, -80 + by, 24, 44), steel)
 	draw_rect(Rect2(2, -80 + by, 10, 44), steel_d)
 	draw_rect(Rect2(-12, -48 + by, 24, 6), Color(0.9, 0.75, 0.3))
 	draw_circle(Vector2(0, -78 + by), 8.0, steel_d)
-	# head, helmet, plume, eye
 	draw_circle(Vector2(0, -92 + by), 12.0, skin)
 	draw_arc(Vector2(0, -94 + by), 13.0, PI, TAU, 10, Color(0.3, 0.33, 0.45), 6.0)
 	draw_line(Vector2(-2, -106 + by), Vector2(-14 - flap * 3.0, -112 + by), Color(0.85, 0.15, 0.2), 4.0)
 	draw_circle(Vector2(5, -92 + by), 1.8, Color(0.1, 0.1, 0.15))
-	# arm and sword
 	if pose == "reach":
 		draw_line(Vector2(4, -74 + by), Vector2(34, -84 + by), steel, 6.0)
 		draw_circle(Vector2(36, -84 + by), 4.0, skin)
