@@ -1,6 +1,6 @@
 shader_type spatial;
 // Fake reflection from an HDRI panorama. gl_compatibility has no SSR.
-render_mode diffuse_burley;
+render_mode diffuse_burley, cull_disabled;
 
 uniform sampler2D normal_tex : hint_normal, repeat_enable;
 uniform sampler2D panorama : source_color, hint_default_black;

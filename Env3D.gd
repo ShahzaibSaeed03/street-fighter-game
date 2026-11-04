@@ -6,6 +6,10 @@ const Levels3DScript := preload("res://Levels3D.gd")
 
 const PX_TO_M := 2.0 / 64.0
 const TILE_M := 2.0
+const ROOM_W := 1152.0
+const ROOM_H := 648.0
+const TILE_PX := 64.0
+const WALL_PX := 36.0
 
 var _preset: Dictionary = {}
 var _dungeon: Node2D
@@ -25,6 +29,8 @@ var _buckets: Dictionary = {}
 var _room_lights: Dictionary = {}
 var _focus_room: String = ""
 var _hero_light: OmniLight3D
+var _lava_light: OmniLight3D
+var _lava_glow_at: Dictionary = {}
 var _room_tris: Dictionary = {}
 var _room_draws: Dictionary = {}
 var _room_origin: Dictionary = {}
@@ -56,16 +62,16 @@ const _KEEP_MAT := {
 	"glow_mushroom": true, "crystal_cluster": true, "crystal_cyan": true, "crystal_pink": true,
 	"geode": true, "stalactite": true, "shards": true, "torch": true, "brazier": true, "cauldron": true,
 	"lava_river": true, "lava_pool": true, "lava_bank": true, "lava_pool_bank": true, "lava_cracks": true,
-	"lava_pool_haze": true,
+	"lava_pool_haze": true, "bank_riser": true,
 	"fog_sheet": true, "shaft": true,
 }
 const _PROP_TINT := {
-	"crate": Color(0.78, 0.5, 0.26),
-	"barrel": Color(0.7, 0.42, 0.2),
+	"crate": Color(0.32, 0.16, 0.08),
+	"barrel": Color(0.38, 0.2, 0.1),
 	"skull": Color(0.82, 0.76, 0.64),
 	"bone_pile": Color(0.78, 0.72, 0.58),
-	"pillar": Color(0.55, 0.5, 0.46),
-	"statue": Color(0.5, 0.46, 0.42),
+	"pillar": Color(0.72, 0.68, 0.6),
+	"statue": Color(0.78, 0.74, 0.66),
 	"banner": Color(0.85, 0.28, 0.14),
 	"grave": Color(0.72, 0.74, 0.66),
 	"gravestone": Color(0.78, 0.8, 0.72),
@@ -195,7 +201,7 @@ func _glassify(mesh: Mesh) -> void:
 		var c := m.albedo_color
 		c.a = 0.58
 		m.albedo_color = c
-		m.emission_energy = minf(m.emission_energy, 0.95)
+		m.emission_energy_multiplier = minf(m.emission_energy_multiplier, 0.95)
 		(mesh as ArrayMesh).surface_set_material(i, m)
 
 
@@ -246,7 +252,8 @@ func _build_environment() -> void:
 		env.sky = sky
 		env.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
 		env.reflected_light_source = Environment.REFLECTION_SOURCE_SKY
-		env.ambient_light_energy = 0.62
+		# Keep the sky for reflections, but low enough that torch color still reads.
+		env.ambient_light_energy = 0.4
 	else:
 		env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 		env.ambient_light_color = _preset["ambient"]
@@ -272,13 +279,25 @@ func _build_environment() -> void:
 	sun.rotation_degrees = Vector3(float(_preset["sun_pitch_deg"]), 35.0, 0.0)
 	_root3.add_child(sun)
 
-	# Unshadowed rim so walls and props separate from the dark without a second shadow map.
+	# A second hue against the world grade: cool fill in the furnace, warm fill in the cool worlds.
 	var rim := DirectionalLight3D.new()
-	rim.light_color = _preset["fog_color"].lightened(0.35)
-	rim.light_energy = 0.45
+	var world_id := String(_preset.get("id", ""))
+	if world_id == "emberfall":
+		rim.light_color = Color(0.55, 0.48, 0.62)
+	else:
+		rim.light_color = Color(1.0, 0.7, 0.38)
+	rim.light_energy = 0.4
 	rim.shadow_enabled = false
 	rim.rotation_degrees = Vector3(-28.0, -150.0, 0.0)
 	_root3.add_child(rim)
+
+	_lava_light = OmniLight3D.new()
+	_lava_light.light_color = Color(1.0, 0.32, 0.06)
+	_lava_light.light_energy = 1.15
+	_lava_light.omni_range = 8.0
+	_lava_light.shadow_enabled = false
+	_lava_light.visible = false
+	_root3.add_child(_lava_light)
 
 	_hero_light = OmniLight3D.new()
 	_hero_light.light_color = Color(1.0, 0.92, 0.8)
@@ -368,7 +387,7 @@ func _emit(holder: Node3D, room: String, piece: String, xforms: Array, shadow: b
 	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON if shadow else GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if piece == "lava_plane" or piece == "lava_river" or piece == "lava_pool":
 		mi.material_override = _lava_mat
-	elif piece == "lava_bank" or piece == "lava_pool_bank":
+	elif piece == "lava_bank" or piece == "lava_pool_bank" or piece == "bank_riser":
 		mi.material_override = _wall_mat
 	elif piece == "lava_cracks":
 		mi.material_override = _crack_mat
@@ -427,7 +446,7 @@ func _make_surface(prefix: String, scale: float, wet: float, mix_amt: float, val
 		mat.set_shader_parameter("vein_color", Vector3(0.25, 0.7, 0.35))
 	elif world == "crystal_deep":
 		mat.set_shader_parameter("rim_color", Vector3(0.72, 0.7, 0.95))
-		mat.set_shader_parameter("vein_color", Vector3(0.45, 0.75, 1.0))
+		mat.set_shader_parameter("vein_color", Vector3(0.32, 0.48, 0.62))
 	return mat
 
 
@@ -450,7 +469,7 @@ func _flush() -> void:
 	if _floor_mat == null and _preset.has("floor_albedo"):
 		var wet := float(_preset.get("wet_strength", 0.15))
 		var world_id := String(_preset.get("id", ""))
-		var veins := 0.9 if world_id == "crystal_deep" else 0.0
+		var veins := 0.55 if world_id == "crystal_deep" else 0.0
 		var floor_value := 1.5 if world_id == "whispering_mire" else 1.2
 		_floor_mat = _make_surface("floor", 0.16, wet, 0.4, floor_value, 0.0, 0.0)
 		_wall_mat = _make_surface("wall", 0.2, wet * 0.25, 0.55, 0.5, 1.0, veins)
@@ -473,6 +492,7 @@ func _flush() -> void:
 		_fog_mat.shader = FogShader
 		var fog_c: Color = _preset.get("fog_color", Color(0.4, 0.4, 0.4))
 		_fog_mat.set_shader_parameter("fog_tint", Vector3(fog_c.r, fog_c.g, fog_c.b))
+		_fog_mat.set_shader_parameter("alpha_scale", 0.05)
 		_shaft_mat = ShaderMaterial.new()
 		_shaft_mat.shader = ShaftShader
 		var torch: Color = _preset.get("torch_color", Color(1, 0.6, 0.3))
@@ -481,7 +501,7 @@ func _flush() -> void:
 		_shroom_mat.albedo_color = Color(0.16, 0.48, 0.32)
 		_shroom_mat.emission_enabled = true
 		_shroom_mat.emission = Color(0.2, 0.85, 0.42)
-		_shroom_mat.emission_energy = 0.65
+		_shroom_mat.emission_energy_multiplier = 0.65
 		_shroom_mat.roughness = 0.42
 		if world_id == "crystal_deep":
 			_water_mat.set_shader_parameter("deep", Vector3(0.12, 0.16, 0.28))
@@ -503,38 +523,29 @@ func _build_from_dungeon() -> void:
 	var contact := PlaneMesh.new()
 	contact.size = Vector2(2.05, 0.7)
 	_meshes["contact"] = contact
-	var water := PlaneMesh.new()
-	water.size = Vector2(2.2, 2.2)
-	_meshes["water"] = water
-	_meshes["lava_river"] = _river_mesh()
-	_meshes["lava_bank"] = _bank_mesh(2.0, 0.48)
-	_meshes["lava_pool"] = _pool_mesh()
-	_meshes["lava_pool_bank"] = _bank_mesh(1.05, 1.05)
-	var haze := PlaneMesh.new()
-	haze.size = Vector2(3.4, 0.85)
-	_meshes["lava_haze"] = haze
-	var haze_p := PlaneMesh.new()
-	haze_p.size = Vector2(1.7, 1.7)
-	_meshes["lava_pool_haze"] = haze_p
-	var cracks := PlaneMesh.new()
-	cracks.size = Vector2(1.8, 1.15)
-	_meshes["lava_cracks"] = cracks
+	# Channel is one tile wide (2 m) and four tiles long. Pool is a 2×2 tile cut.
+	_meshes["lava_river"] = _rounded_mesh(3.65, 0.68, 0.68, -0.32)
+	_meshes["lava_pool"] = _rounded_mesh(1.66, 1.66, 0.55, -0.32)
+	_meshes["water"] = _meshes["lava_pool"]
+	_meshes["bank_riser"] = _riser_mesh()
 	var fog := PlaneMesh.new()
-	fog.size = Vector2(10.0, 7.5)
+	fog.size = Vector2(14.0, 10.0)
 	_meshes["fog_sheet"] = fog
 	_meshes["shaft"] = _shaft_mesh()
 	if _meshes.has("crate"):
 		_meshes["crate_hot"] = _meshes["crate"]
 	if _meshes.has("barrel"):
 		_meshes["barrel_hot"] = _meshes["barrel"]
+	var cuts := _cut_cells()
 	for id in _dungeon.room_ids():
 		var o: Vector2 = _dungeon.origin_of(id)
-		var cols := int(ceil(1152.0 / 64.0))
-		var rows := int(ceil(648.0 / 64.0))
+		var cols := int(ceil(ROOM_W / TILE_PX))
+		var rows := int(ceil(ROOM_H / TILE_PX))
 		for cy in rows:
 			for cx in cols:
-				var px := o + Vector2((cx + 0.5) * 64.0, (cy + 0.5) * 64.0)
-				_queue("floor_a", px, 0.0, Vector3.ONE, 0.0)
+				var px := o + Vector2((float(cx) + 0.5) * TILE_PX, (float(cy) + 0.5) * TILE_PX)
+				var drop := -0.55 if cuts.has(_cell_key(cx, cy)) else 0.0
+				_queue("floor_a", px, 0.0, Vector3.ONE, drop)
 		var ceil_piece := String(_preset.get("ceiling_piece", ""))
 		if _meshes.has(ceil_piece):
 			var along_wall := ceil_piece == "ceiling_beam"
@@ -563,85 +574,113 @@ func _build_from_dungeon() -> void:
 				_queue("contact", px2, PI * 0.5, Vector3(1.05, 1.0, 1.0), 0.03)
 
 	_place_props()
-	_place_lava()
+	_place_floor_cuts()
 	_place_torches()
 	_place_outdoor()
 	_place_boss_arena()
 	_flush()
 
 
-func _view_anchor(id: String) -> Vector2:
-	# Level shots and the first in-game frame look at origin+(170, 324).
-	# Boss shots teleport the player to the room center.
-	if _dungeon.has_method("boss_id") and String(_dungeon.boss_id()) == id:
-		return _dungeon.room_center(id)
-	return _dungeon.origin_of(id) + Vector2(170.0, 324.0)
-
-
 func _place_props() -> void:
 	var world := String(_preset.get("id", ""))
 	for id in _dungeon.room_ids():
-		var a: Vector2 = _view_anchor(String(id))
-		_place_focal(a)
-		_place_fog_and_shafts(a)
+		var rid := String(id)
+		var o: Vector2 = _dungeon.origin_of(rid)
+		_place_frames(rid)
+		_place_fog_and_shafts(o)
 		if world == "emberfall":
-			_place_ember_cluster(a)
+			_place_ember_walls(o)
 		elif world == "whispering_mire":
-			_place_mire_cluster(a)
+			_place_mire_walls(o)
 		else:
-			_place_crystal_cluster(a)
+			_place_crystal_walls(o)
 
 
-func _place_focal(a: Vector2) -> void:
-	_queue("doorway", a + Vector2(-120, -10), PI * 0.5, Vector3.ONE * 1.05, 0.0)
-	_queue("corner_tower", a + Vector2(-90, -130), 0.4, Vector3.ONE * 1.0, 0.0)
-	_queue("arch", a + Vector2(30, -150), 0.2, Vector3.ONE * 1.05, 0.0)
+func _place_frames(id: String) -> void:
+	var openings := _openings(id)
+	var frame_scale := Vector3(1.15, 1.28, 1.05)
+	for i in openings.size():
+		var op: Dictionary = openings[i]
+		var piece := "doorway" if i % 2 == 0 else "arch"
+		if not _meshes.has(piece):
+			piece = "doorway" if _meshes.has("doorway") else "arch"
+		_queue(piece, op["pos"], float(op["yaw"]), frame_scale, 0.0)
+	var o: Vector2 = _dungeon.origin_of(id)
+	var corners: Array[Vector2] = [
+		o + Vector2(WALL_PX * 0.5, WALL_PX * 0.5),
+		o + Vector2(ROOM_W - WALL_PX * 0.5, WALL_PX * 0.5),
+		o + Vector2(WALL_PX * 0.5, ROOM_H - WALL_PX * 0.5),
+		o + Vector2(ROOM_W - WALL_PX * 0.5, ROOM_H - WALL_PX * 0.5),
+	]
+	for c in corners:
+		_queue("corner_tower", c, 0.15, Vector3.ONE * 0.8, 0.0)
 
 
-func _place_ember_cluster(a: Vector2) -> void:
-	_queue("crate", a + Vector2(-70, 55), 0.3, Vector3.ONE * 1.35, 0.0)
-	_queue("crate_hot", a + Vector2(45, 85), 0.8, Vector3.ONE * 1.2, 0.0)
-	_queue("barrel", a + Vector2(95, 35), 0.5, Vector3.ONE * 1.25, 0.0)
-	_queue("barrel_hot", a + Vector2(-25, 105), 1.1, Vector3.ONE * 1.15, 0.0)
-	_queue("pillar", a + Vector2(125, -35), 0.2, Vector3.ONE * 1.05, 0.0)
-	_queue("statue", a + Vector2(-145, 50), 0.6, Vector3.ONE * 1.0, 0.0)
-	_queue("rubble", a + Vector2(70, 120), 0.4, Vector3.ONE * 1.3, 0.0)
-	_queue("banner", a + Vector2(-35, -85), 0.1, Vector3.ONE * 1.05, 0.0)
+func _openings(id: String) -> Array:
+	var out: Array = []
+	if not _dungeon.has_method("doors"):
+		return out
+	var o: Vector2 = _dungeon.origin_of(id)
+	for d in _dungeon.doors():
+		var other := ""
+		if String(d["a"]) == id:
+			other = String(d["b"])
+		elif String(d["b"]) == id:
+			other = String(d["a"])
+		else:
+			continue
+		# One frame per shared opening. The other room skips it.
+		if id > other:
+			continue
+		var oo: Vector2 = _dungeon.origin_of(other)
+		var delta := oo - o
+		if absf(delta.x) > absf(delta.y):
+			var edge_x := o.x + ROOM_W - WALL_PX * 0.5 if delta.x > 0.0 else o.x + WALL_PX * 0.5
+			out.append({"pos": Vector2(edge_x, o.y + ROOM_H * 0.5), "yaw": PI * 0.5})
+		else:
+			var edge_y := o.y + ROOM_H - WALL_PX * 0.5 if delta.y > 0.0 else o.y + WALL_PX * 0.5
+			out.append({"pos": Vector2(o.x + ROOM_W * 0.5, edge_y), "yaw": 0.0})
+	return out
 
 
-func _place_mire_cluster(a: Vector2) -> void:
-	_queue("swamp_tree", a + Vector2(-155, -80), 0.5, Vector3.ONE * 1.05, 0.0)
-	_queue("swamp_tree", a + Vector2(145, -105), 1.2, Vector3.ONE * 1.15, 0.0)
-	_queue("swamp_tree", a + Vector2(-140, 95), 2.1, Vector3.ONE * 0.95, 0.0)
-	_queue("log", a + Vector2(40, 75), 0.6, Vector3.ONE * 1.4, 0.0)
-	_queue("roots", a + Vector2(-45, 95), 0.3, Vector3.ONE * 1.35, 0.0)
-	_queue("grave", a + Vector2(105, 25), 0.2, Vector3.ONE * 1.15, 0.0)
-	_queue("reeds", a + Vector2(-55, 35), 0.4, Vector3.ONE * 1.4, 0.0)
-	_queue("plants", a + Vector2(15, 115), 1.0, Vector3.ONE * 1.35, 0.0)
-	_queue("glow_mushroom", a + Vector2(-15, -45), 0.2, Vector3.ONE * 1.45, 0.0)
-	_queue("glow_mushroom", a + Vector2(75, -15), 0.9, Vector3.ONE * 1.25, 0.0)
-	_queue("hanging_moss", a + Vector2(0, -125), 0.0, Vector3.ONE * 1.3, 2.9)
+func _place_ember_walls(o: Vector2) -> void:
+	# North bank of the lava. y=150 sits inside the room, clear of the thick wall mesh.
+	_queue("crate", o + Vector2(270, 140), 0.35, Vector3.ONE * 1.35, 0.0)
+	_queue("barrel", o + Vector2(345, 136), 0.9, Vector3.ONE * 1.25, 0.0)
+	_queue("rubble", o + Vector2(308, 152), 0.2, Vector3.ONE * 1.15, 0.0)
+	_queue("statue", o + Vector2(425, 142), 0.45, Vector3.ONE * 1.15, 0.0)
+	_queue("pillar", o + Vector2(845, 160), 0.15, Vector3.ONE * 0.95, 0.0)
+	_queue("banner", o + Vector2(790, 150), 0.05, Vector3.ONE, 0.0)
+	# Beside the south-east pool, off the coin at (1000, 520).
+	_queue("crate_hot", o + Vector2(700, 500), 0.55, Vector3.ONE * 1.05, 0.0)
+	_queue("barrel_hot", o + Vector2(735, 430), 1.1, Vector3.ONE * 1.0, 0.0)
 
 
-func _place_crystal_cluster(a: Vector2) -> void:
-	_queue("crystal_cluster", a + Vector2(-35, 25), 0.4, Vector3.ONE * 2.3, 0.0)
-	_queue("crystal_cluster", a + Vector2(85, 55), 1.1, Vector3.ONE * 2.05, 0.0)
-	_queue("crystal_cyan", a + Vector2(25, -55), 0.6, Vector3.ONE * 2.1, 0.0)
-	_queue("crystal_pink", a + Vector2(115, -5), 0.2, Vector3.ONE * 1.85, 0.0)
-	_queue("stalactite", a + Vector2(-5, -135), 0.3, Vector3.ONE * 1.4, 3.15)
-	_queue("stalactite", a + Vector2(55, 105), 0.8, Vector3(1.3, -1.3, 1.3), 0.0)
-	_queue("pillar", a + Vector2(130, -40), 0.2, Vector3.ONE * 1.05, 0.0)
-	_queue("statue", a + Vector2(-120, 40), 0.7, Vector3.ONE * 1.0, 0.0)
-	_queue("cave_rock", a + Vector2(50, 115), 0.5, Vector3.ONE * 1.35, 0.0)
+func _place_mire_walls(o: Vector2) -> void:
+	# Long fallen log on the north wall, between the pool and the door.
+	# Log mesh is long on local Z. Yaw turns that along the north wall.
+	_queue("log", o + Vector2(430, 210), PI * 0.5, Vector3(1.0, 0.9, 1.15), 0.0)
+	_queue("glow_mushroom", o + Vector2(165, 215), 0.35, Vector3.ONE * 1.1, 0.0)
+	_queue("glow_mushroom", o + Vector2(760, 175), 0.25, Vector3.ONE * 1.1, 0.0)
+	_queue("glow_mushroom", o + Vector2(830, 200), 0.9, Vector3.ONE * 0.95, 0.0)
+	_queue("roots", o + Vector2(880, 165), 0.55, Vector3.ONE * 1.05, 0.0)
+	_queue("swamp_tree", o + Vector2(1090, 185), 1.05, Vector3.ONE * 0.72, 0.0)
+	_queue("grave", o + Vector2(900, 175), 0.2, Vector3.ONE * 0.9, 0.0)
+	_queue("hanging_moss", o + Vector2(360, 155), 0.1, Vector3.ONE * 1.15, 2.65)
 
 
-func _place_fog_and_shafts(a: Vector2) -> void:
-	_queue("fog_sheet", a, 0.2, Vector3.ONE, 0.35)
-	_queue("fog_sheet", a + Vector2(20, -10), 0.6, Vector3(0.85, 1.0, 0.8), 0.9)
-	_queue("fog_sheet", a + Vector2(-15, 15), 1.0, Vector3(0.7, 1.0, 0.65), 1.45)
-	_queue("shaft", a + Vector2(-70, -20), 0.4, Vector3.ONE, 0.0)
-	_queue("shaft", a + Vector2(55, 15), 1.2, Vector3.ONE, 0.0)
-	_queue("shaft", a + Vector2(95, -70), 2.0, Vector3.ONE, 0.0)
+func _place_crystal_walls(o: Vector2) -> void:
+	_queue("crystal_cluster", o + Vector2(450, 158), 0.4, Vector3.ONE * 1.45, 0.0)
+	_queue("cave_rock", o + Vector2(400, 175), 0.25, Vector3.ONE * 1.15, 0.0)
+	_queue("stalactite", o + Vector2(500, 185), 0.5, Vector3(1.15, -1.15, 1.15), 0.0)
+	_queue("crystal_cyan", o + Vector2(780, 160), 0.75, Vector3.ONE * 1.35, 0.0)
+	_queue("pillar", o + Vector2(860, 160), 0.2, Vector3.ONE * 0.85, 0.0)
+	_queue("crystal_pink", o + Vector2(320, 530), 0.35, Vector3.ONE * 1.25, 0.0)
+	_queue("statue", o + Vector2(390, 480), 0.6, Vector3.ONE * 0.9, 0.0)
+
+
+func _place_fog_and_shafts(o: Vector2) -> void:
+	_queue("fog_sheet", o + Vector2(ROOM_W * 0.5, ROOM_H * 0.55), 0.0, Vector3.ONE, 0.22)
 
 
 func _place_outdoor() -> void:
@@ -671,104 +710,147 @@ func _place_boss_arena() -> void:
 			_queue(accent, c + Vector2(cos(ang), sin(ang)) * 220.0, ang, Vector3.ONE * 1.2, 0.0)
 
 
-func _place_lava() -> void:
+func _cell_key(cx: int, cy: int) -> String:
+	return "%d:%d" % [cx, cy]
+
+
+func _cut_cells() -> Dictionary:
+	# Room-local tile indices. The east-west walk is row 5 (y ~324) and the
+	# north-south walk is columns 8-9 (x ~576). Cuts stay off both.
+	var cells := {}
 	var world := String(_preset.get("id", ""))
+	if world == "emberfall":
+		for cx in [2, 3, 4, 5]:
+			cells[_cell_key(int(cx), 3)] = true
+		for cx in [12, 13]:
+			for cy in [7, 8]:
+				cells[_cell_key(int(cx), int(cy))] = true
+	else:
+		# North corners, one tile in from the thick wall, above the east-west walk.
+		for cx in [3, 4]:
+			for cy in [2, 3]:
+				cells[_cell_key(int(cx), int(cy))] = true
+		for cx in [13, 14]:
+			for cy in [2, 3]:
+				cells[_cell_key(int(cx), int(cy))] = true
+	return cells
+
+
+func _span_center(o: Vector2, cx0: int, cx1: int, cy0: int, cy1: int) -> Vector2:
+	var x := ((float(cx0) + float(cx1)) * 0.5 + 0.5) * TILE_PX
+	var y := ((float(cy0) + float(cy1)) * 0.5 + 0.5) * TILE_PX
+	return o + Vector2(x, y)
+
+
+func _place_floor_cuts() -> void:
+	var world := String(_preset.get("id", ""))
+	var cells := _cut_cells()
 	for id in _dungeon.room_ids():
-		var a: Vector2 = _view_anchor(String(id))
+		var o: Vector2 = _dungeon.origin_of(id)
 		if world == "emberfall":
-			_lava_channel(a + Vector2(15, -55), 0.15, false)
-			_lava_channel(a + Vector2(115, 80), 0.5, true)
-			_lava_channel(a + Vector2(-85, 95), 1.15, true)
+			_queue("lava_river", _span_center(o, 2, 5, 3, 3), 0.0, Vector3.ONE, 0.0)
+			_queue("lava_pool", _span_center(o, 12, 13, 7, 8), 0.0, Vector3.ONE, 0.0)
+			_lava_glow_at[String(id)] = _span_center(o, 2, 5, 3, 3)
 		else:
-			_queue("water", a + Vector2(25, -25), 0.2, Vector3(1.45, 1.0, 1.15), 0.08)
-			_queue("water", a + Vector2(95, 75), 0.7, Vector3(1.05, 1.0, 0.9), 0.08)
+			_queue("water", _span_center(o, 3, 4, 2, 3), 0.0, Vector3.ONE, 0.16)
+			_queue("water", _span_center(o, 13, 14, 2, 3), 0.0, Vector3.ONE, 0.16)
+		_place_risers(o, cells)
 
 
-func _lava_channel(at: Vector2, yaw: float, pool: bool) -> void:
-	var piece := "lava_pool" if pool else "lava_river"
-	var bank := "lava_pool_bank" if pool else "lava_bank"
-	var haze := "lava_pool_haze" if pool else "lava_haze"
-	_queue(piece, at, yaw, Vector3.ONE, 0.0)
-	_queue(bank, at, yaw, Vector3.ONE, 0.0)
-	_queue(haze, at, yaw, Vector3.ONE, 0.16)
-	_queue("lava_cracks", at + Vector2(cos(yaw), sin(yaw)) * 78.0, yaw, Vector3.ONE, 0.03)
+func _place_risers(o: Vector2, cells: Dictionary) -> void:
+	for key in cells.keys():
+		var parts := String(key).split(":")
+		var cx := int(parts[0])
+		var cy := int(parts[1])
+		var center := o + Vector2((float(cx) + 0.5) * TILE_PX, (float(cy) + 0.5) * TILE_PX)
+		if not cells.has(_cell_key(cx, cy - 1)):
+			_queue("bank_riser", center + Vector2(0, -32), PI, Vector3.ONE, 0.0)
+		if not cells.has(_cell_key(cx, cy + 1)):
+			_queue("bank_riser", center + Vector2(0, 32), 0.0, Vector3.ONE, 0.0)
+		if not cells.has(_cell_key(cx + 1, cy)):
+			_queue("bank_riser", center + Vector2(32, 0), PI * 0.5, Vector3.ONE, 0.0)
+		if not cells.has(_cell_key(cx - 1, cy)):
+			_queue("bank_riser", center + Vector2(-32, 0), -PI * 0.5, Vector3.ONE, 0.0)
 
 
-func _add_quad(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
-	st.set_uv(Vector2(0, 0))
-	st.add_vertex(a)
-	st.set_uv(Vector2(1, 0))
-	st.add_vertex(b)
-	st.set_uv(Vector2(1, 1))
-	st.add_vertex(c)
-	st.set_uv(Vector2(0, 0))
-	st.add_vertex(a)
-	st.set_uv(Vector2(1, 1))
-	st.add_vertex(c)
-	st.set_uv(Vector2(0, 1))
-	st.add_vertex(d)
-	st.set_uv(Vector2(0, 0))
-	st.add_vertex(a)
-	st.set_uv(Vector2(0, 1))
-	st.add_vertex(d)
-	st.set_uv(Vector2(1, 1))
-	st.add_vertex(c)
+func _rim_uv(p: Vector2, hx: float, hz: float) -> Vector2:
+	return Vector2(p.x / (hx * 2.0) + 0.5, p.y / (hz * 2.0) + 0.5)
 
 
-func _finish_mesh(st: SurfaceTool) -> ArrayMesh:
+func _rounded_mesh(hx: float, hz: float, radius: float, y: float) -> ArrayMesh:
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var r := minf(radius, minf(hx, hz) * 0.98)
+	var ix := hx - r
+	var iz := hz - r
+	var pts := PackedVector2Array()
+	var segs := 4
+	var corners: Array[Vector2] = [Vector2(ix, -iz), Vector2(ix, iz), Vector2(-ix, iz), Vector2(-ix, -iz)]
+	var a0: Array[float] = [-PI * 0.5, 0.0, PI * 0.5, PI]
+	for k in 4:
+		for s in segs + 1:
+			var ang := a0[k] + (PI * 0.5) * float(s) / float(segs)
+			pts.append(corners[k] + Vector2(cos(ang), sin(ang)) * r)
+	pts.append(pts[0])
+	var c := Vector3(0.0, y, 0.0)
+	for i in pts.size() - 1:
+		var p0 := pts[i]
+		var p1 := pts[i + 1]
+		st.set_uv(Vector2(0.5, 0.5))
+		st.add_vertex(c)
+		st.set_uv(_rim_uv(p1, hx, hz))
+		st.add_vertex(Vector3(p1.x, y, p1.y))
+		st.set_uv(_rim_uv(p0, hx, hz))
+		st.add_vertex(Vector3(p0.x, y, p0.y))
 	st.generate_normals()
 	return st.commit()
 
 
-func _river_mesh() -> ArrayMesh:
+func _riser_mesh() -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	_add_quad(st, Vector3(-2.0, 0.07, -0.48), Vector3(2.0, 0.07, -0.48), Vector3(2.0, 0.07, 0.48), Vector3(-2.0, 0.07, 0.48))
-	return _finish_mesh(st)
+	var a := Vector3(-1.0, -0.55, 0.0)
+	var b := Vector3(1.0, -0.55, 0.0)
+	var cv := Vector3(1.0, 0.04, 0.42)
+	var d := Vector3(-1.0, 0.04, 0.42)
+	st.set_uv(Vector2(0, 1))
+	st.add_vertex(a)
+	st.set_uv(Vector2(0, 0))
+	st.add_vertex(d)
+	st.set_uv(Vector2(1, 0))
+	st.add_vertex(cv)
+	st.set_uv(Vector2(0, 1))
+	st.add_vertex(a)
+	st.set_uv(Vector2(1, 0))
+	st.add_vertex(cv)
+	st.set_uv(Vector2(1, 1))
+	st.add_vertex(b)
+	st.generate_normals()
+	return st.commit()
 
 
-func _pool_mesh() -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	_add_quad(st, Vector3(-1.05, 0.07, -1.05), Vector3(1.05, 0.07, -1.05), Vector3(1.05, 0.07, 1.05), Vector3(-1.05, 0.07, 1.05))
-	return _finish_mesh(st)
-
-
-func _bank_mesh(hx: float, hz: float) -> ArrayMesh:
-	var st := SurfaceTool.new()
-	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var lip := 0.28
-	_add_quad(st, Vector3(-hx, 0.07, -hz), Vector3(hx, 0.07, -hz), Vector3(hx, 0.24, -hz - lip), Vector3(-hx, 0.24, -hz - lip))
-	_add_quad(st, Vector3(hx, 0.07, hz), Vector3(-hx, 0.07, hz), Vector3(-hx, 0.24, hz + lip), Vector3(hx, 0.24, hz + lip))
-	_add_quad(st, Vector3(-hx, 0.07, hz), Vector3(-hx, 0.07, -hz), Vector3(-hx - lip, 0.24, -hz), Vector3(-hx - lip, 0.24, hz))
-	_add_quad(st, Vector3(hx, 0.07, -hz), Vector3(hx, 0.07, hz), Vector3(hx + lip, 0.24, hz), Vector3(hx + lip, 0.24, -hz))
-	return _finish_mesh(st)
+func _sheet(st: SurfaceTool, a: Vector3, b: Vector3, c: Vector3, d: Vector3) -> void:
+	st.set_uv(Vector2(0, 0))
+	st.add_vertex(a)
+	st.set_uv(Vector2(0, 1))
+	st.add_vertex(d)
+	st.set_uv(Vector2(1, 1))
+	st.add_vertex(c)
+	st.set_uv(Vector2(0, 0))
+	st.add_vertex(a)
+	st.set_uv(Vector2(1, 1))
+	st.add_vertex(c)
+	st.set_uv(Vector2(1, 0))
+	st.add_vertex(b)
 
 
 func _shaft_mesh() -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var sides := 5
-	for i in sides:
-		var a0 := TAU * float(i) / float(sides)
-		var a1 := TAU * float(i + 1) / float(sides)
-		var top0 := Vector3(cos(a0) * 0.1, 3.05, sin(a0) * 0.1)
-		var top1 := Vector3(cos(a1) * 0.1, 3.05, sin(a1) * 0.1)
-		var bot0 := Vector3(cos(a0) * 0.7, 0.2, sin(a0) * 0.7)
-		var bot1 := Vector3(cos(a1) * 0.7, 0.2, sin(a1) * 0.7)
-		st.set_uv(Vector2(0.5, 0.82))
-		st.add_vertex(top0)
-		st.set_uv(Vector2(0.5, 0.82))
-		st.add_vertex(top1)
-		st.set_uv(Vector2(0.5, 0.22))
-		st.add_vertex(bot1)
-		st.set_uv(Vector2(0.5, 0.82))
-		st.add_vertex(top0)
-		st.set_uv(Vector2(0.5, 0.22))
-		st.add_vertex(bot1)
-		st.set_uv(Vector2(0.5, 0.22))
-		st.add_vertex(bot0)
-	return _finish_mesh(st)
+	_sheet(st, Vector3(-0.9, 0.35, 0.0), Vector3(0.9, 0.35, 0.0), Vector3(0.9, 3.15, 0.0), Vector3(-0.9, 3.15, 0.0))
+	_sheet(st, Vector3(0.0, 0.35, -0.9), Vector3(0.0, 0.35, 0.9), Vector3(0.0, 3.15, 0.9), Vector3(0.0, 3.15, -0.9))
+	st.generate_normals()
+	return st.commit()
 
 
 func _place_torches() -> void:
@@ -809,7 +891,7 @@ func _place_torches() -> void:
 
 func _setup_camera() -> void:
 	_cam = Camera3D.new()
-	_cam.fov = 46.0
+	_cam.fov = 43.0
 	_cam.current = true
 	_root3.add_child(_cam)
 	_update_camera(true)
@@ -854,8 +936,8 @@ func _update_camera(force: bool = false) -> void:
 	if _cam == null or _player == null or not is_instance_valid(_player):
 		return
 	var target := _to3(_player.global_position, 0.85)
-	# Close enough that a 6 m cluster around the player fills the first frame.
-	var desired := target + Vector3(0.35, 7.2, 8.0)
+	# Far enough that the player, enemies and pickups read, close enough to see the walls.
+	var desired := target + Vector3(0.4, 9.6, 10.8)
 	if force:
 		_cam.global_position = desired
 	else:
@@ -892,6 +974,12 @@ func _focus_room_lights() -> void:
 			L.rotation_degrees = Vector3(-58.0, float(i) * 80.0, 0.0)
 		else:
 			L.visible = false
+	if _lava_light != null:
+		var glow: Vector2 = _lava_glow_at.get(rid, Vector2.ZERO)
+		var show_lava := glow != Vector2.ZERO and String(_preset.get("id", "")) == "emberfall"
+		_lava_light.visible = show_lava
+		if show_lava:
+			_lava_light.global_position = _to3(glow, 0.65)
 
 
 func _process(delta: float) -> void:

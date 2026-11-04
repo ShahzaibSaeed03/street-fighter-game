@@ -40,16 +40,16 @@ void fragment() {
 	col = mix(col, rim_color, rim);
 	float rough = texture(rough_tex, uv).r;
 	float wet = smoothstep(0.62, 0.9, stain);
+	// Sparse irregular cracks. Most of the wall stays rock; only a few segments glow.
+	float n1 = sin(wpos.x * 1.37 + wpos.y * 0.41) * sin(wpos.z * 0.83 + wpos.y * 2.15);
+	float n2 = sin(wpos.x * 0.47 - wpos.z * 1.65 + wpos.y * 0.22);
+	float crack = n1 * 0.65 + n2 * 0.35;
+	float bits = fract(sin(floor(wpos.x * 0.31 + wpos.z * 0.19 + wpos.y * 0.07) * 12.9898) * 43758.5453);
+	float thin = smoothstep(0.4, 0.7, crack) * smoothstep(0.18, 0.48, bits);
+	col = mix(col, vein_color, thin * vein * 0.28);
 	ALBEDO = col;
 	ROUGHNESS = mix(rough, 0.16, wet * wet_strength);
 	NORMAL_MAP = texture(normal_tex, uv).rgb;
 	NORMAL_MAP_DEPTH = 0.65;
-	float along = wpos.x * 0.41 + wpos.z * 0.27;
-	float wander = sin(along * 3.1) * 0.12;
-	float band = abs(fract(wpos.y * 0.48 + wander) - 0.5);
-	float thin = 1.0 - smoothstep(0.008, 0.028, band);
-	float band2 = abs(fract(along * 0.62 + wpos.y * 0.04) - 0.5);
-	float thin2 = 1.0 - smoothstep(0.006, 0.02, band2);
-	col *= mix(1.0, 0.42, thin2 * top_rim);
-	EMISSION = vein_color * max(thin, thin2) * vein;
+	EMISSION = vein_color * thin * vein * 0.4;
 }

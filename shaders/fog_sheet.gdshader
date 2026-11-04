@@ -7,7 +7,7 @@ uniform float alpha_scale : hint_range(0.0, 0.4) = 0.12;
 void fragment() {
 	vec2 uv = UV * vec2(3.0, 2.0) + vec2(TIME * 0.02, TIME * 0.01);
 	float n = 0.5 + 0.5 * sin(uv.x * 8.0 + TIME * 0.3) * sin(uv.y * 6.0 - TIME * 0.2);
-	float band = smoothstep(0.15, 0.85, n);
+	float band = smoothstep(0.05, 0.45, n) * (1.0 - smoothstep(0.62, 0.98, n));
 	ALBEDO = fog_tint;
 	ALPHA = alpha_scale * band;
 }
