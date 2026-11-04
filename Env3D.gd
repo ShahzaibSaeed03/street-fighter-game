@@ -16,7 +16,7 @@ var _root3: Node3D
 var _cam: Camera3D
 var _pivot: Node3D
 var _prop_root: Node3D
-var _lights: Array[OmniLight3D] = []
+var _lights: Array[SpotLight3D] = []
 var _weather: GPUParticles3D
 var _active: bool = false
 var _meshes: Dictionary = {}
@@ -31,13 +31,47 @@ var _room_origin: Dictionary = {}
 var _tri_cache: Dictionary = {}
 var _floor_mat: ShaderMaterial
 var _wall_mat: ShaderMaterial
+var _water_mat: ShaderMaterial
+var _prop_mats: Dictionary = {}
+var _room_props: Dictionary = {}
 const LavaShader := preload("res://shaders/lava_crust.gdshader")
 const SurfaceShader := preload("res://shaders/env_surface.gdshader")
+const WaterShader := preload("res://shaders/water_gloss.gdshader")
+const HazeShader := preload("res://shaders/heat_haze.gdshader")
+const _KEEP_MAT := {
+	"lava_plane": true, "lava_haze": true, "water": true, "contact": true,
+	"floor_a": true, "wall_straight": true,
+	"glow_mushroom": true, "crystal_cluster": true, "crystal_cyan": true, "crystal_pink": true,
+	"geode": true, "stalactite": true, "shards": true, "torch": true, "brazier": true, "cauldron": true,
+}
+const _PROP_TINT := {
+	"crate": Color(0.78, 0.5, 0.26),
+	"barrel": Color(0.7, 0.42, 0.2),
+	"skull": Color(0.82, 0.76, 0.64),
+	"bone_pile": Color(0.78, 0.72, 0.58),
+	"pillar": Color(0.55, 0.5, 0.46),
+	"statue": Color(0.5, 0.46, 0.42),
+	"banner": Color(0.85, 0.28, 0.14),
+	"grave": Color(0.72, 0.74, 0.66),
+	"gravestone": Color(0.78, 0.8, 0.72),
+	"log": Color(0.62, 0.4, 0.22),
+	"roots": Color(0.5, 0.32, 0.16),
+	"swamp_tree": Color(0.4, 0.5, 0.28),
+	"cave_rock": Color(0.45, 0.4, 0.55),
+	"rubble": Color(0.4, 0.32, 0.26),
+	"buttress": Color(0.35, 0.28, 0.24),
+	"alcove": Color(0.22, 0.16, 0.14),
+	"weapon_rack": Color(0.4, 0.24, 0.12),
+	"cage": Color(0.35, 0.28, 0.18),
+	"reeds": Color(0.55, 0.75, 0.32),
+	"chains": Color(0.25, 0.24, 0.26),
+	"cobweb": Color(0.7, 0.7, 0.65),
+}
 const _HANG := {
-	"chains": 1.15,
-	"cobweb": 1.65,
-	"hanging_moss": 2.2,
-	"stalactite": 2.55,
+	"chains": 2.35,
+	"cobweb": 2.5,
+	"hanging_moss": 3.15,
+	"stalactite": 3.35,
 	"banner": 0.0,
 }
 
@@ -264,37 +298,82 @@ func _emit(holder: Node3D, room: String, piece: String, xforms: Array, shadow: b
 		var mat := ShaderMaterial.new()
 		mat.shader = LavaShader
 		mi.material_override = mat
+	elif piece == "lava_haze":
+		var haze := ShaderMaterial.new()
+		haze.shader = HazeShader
+		mi.material_override = haze
+	elif piece == "water":
+		mi.material_override = _water_mat
+	elif piece == "contact":
+		var dark := StandardMaterial3D.new()
+		dark.albedo_color = Color(0.012, 0.008, 0.008)
+		dark.roughness = 1.0
+		dark.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		mi.material_override = dark
 	elif piece == "floor_a" and _floor_mat != null:
 		mi.material_override = _floor_mat
 	elif piece == "wall_straight" and _wall_mat != null:
 		mi.material_override = _wall_mat
+	elif not _KEEP_MAT.has(piece):
+		mi.material_override = _prop_material(piece)
 	holder.add_child(mi)
 	for i in xforms.size():
 		mm.set_instance_transform(i, xforms[i])
 	_room_tris[room] = int(_room_tris.get(room, 0)) + _mesh_tris(mesh) * xforms.size()
+	if piece != "floor_a" and piece != "wall_straight" and piece != "contact" and piece != "lava_haze":
+		_room_props[room] = int(_room_props.get(room, 0)) + xforms.size()
 	# One draw per surface (a mesh with stalk/cap/spots is more than one call).
 	_room_draws[room] = int(_room_draws.get(room, 0)) + maxi(mesh.get_surface_count(), 1)
 
 
-func _make_surface(scale: float, wet: float, mix_amt: float) -> ShaderMaterial:
+func _make_surface(prefix: String, scale: float, wet: float, mix_amt: float, value: float, rim: float, veins: float) -> ShaderMaterial:
 	var mat := ShaderMaterial.new()
 	mat.shader = SurfaceShader
-	mat.set_shader_parameter("albedo", load(String(_preset.get("floor_albedo", ""))))
-	mat.set_shader_parameter("detail", load(String(_preset.get("floor_detail", ""))))
-	mat.set_shader_parameter("rough_tex", load(String(_preset.get("floor_rough", ""))))
-	mat.set_shader_parameter("normal_tex", load(String(_preset.get("floor_normal", ""))))
-	var tint: Color = _preset.get("surface_tint", Color(1, 1, 1))
+	mat.set_shader_parameter("albedo", load(String(_preset.get(prefix + "_albedo", ""))))
+	mat.set_shader_parameter("detail", load(String(_preset.get(prefix + "_detail", ""))))
+	mat.set_shader_parameter("rough_tex", load(String(_preset.get(prefix + "_rough", ""))))
+	mat.set_shader_parameter("normal_tex", load(String(_preset.get(prefix + "_normal", ""))))
+	var tint: Color = _preset.get(prefix + "_tint", _preset.get("surface_tint", Color(1, 1, 1)))
 	mat.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
 	mat.set_shader_parameter("uv_scale", scale)
 	mat.set_shader_parameter("detail_mix", mix_amt)
 	mat.set_shader_parameter("wet_strength", wet)
+	mat.set_shader_parameter("value", value)
+	mat.set_shader_parameter("top_rim", rim)
+	mat.set_shader_parameter("vein", veins)
+	var world := String(_preset.get("id", ""))
+	if world == "whispering_mire":
+		mat.set_shader_parameter("rim_color", Vector3(0.78, 0.95, 0.62))
+		mat.set_shader_parameter("vein_color", Vector3(0.25, 0.7, 0.35))
+	elif world == "crystal_deep":
+		mat.set_shader_parameter("rim_color", Vector3(0.72, 0.7, 0.95))
+		mat.set_shader_parameter("vein_color", Vector3(0.45, 0.75, 1.0))
+	return mat
+
+
+func _prop_material(piece: String) -> ShaderMaterial:
+	if _prop_mats.has(piece):
+		return _prop_mats[piece]
+	var mat := _make_surface("floor", 0.55, 0.05, 0.25, 1.0, 0.0, 0.0)
+	var tint: Color = _PROP_TINT.get(piece, Color(0.55, 0.5, 0.45))
+	mat.set_shader_parameter("tint", Vector3(tint.r, tint.g, tint.b))
+	_prop_mats[piece] = mat
 	return mat
 
 
 func _flush() -> void:
 	if _floor_mat == null and _preset.has("floor_albedo"):
-		_floor_mat = _make_surface(0.18, float(_preset.get("wet_strength", 0.15)), 0.38)
-		_wall_mat = _make_surface(0.26, float(_preset.get("wet_strength", 0.1)) * 0.35, 0.48)
+		var wet := float(_preset.get("wet_strength", 0.15))
+		var world_id := String(_preset.get("id", ""))
+		var veins := 0.9 if world_id == "crystal_deep" else 0.0
+		var floor_value := 1.5 if world_id == "whispering_mire" else 1.2
+		_floor_mat = _make_surface("floor", 0.16, wet, 0.4, floor_value, 0.0, 0.0)
+		_wall_mat = _make_surface("wall", 0.2, wet * 0.25, 0.55, 0.5, 1.0, veins)
+		_water_mat = ShaderMaterial.new()
+		_water_mat.shader = WaterShader
+		if String(_preset.get("id", "")) == "crystal_deep":
+			_water_mat.set_shader_parameter("deep", Vector3(0.16, 0.22, 0.4))
+			_water_mat.set_shader_parameter("glaze", Vector3(0.78, 0.88, 1.0))
 	for room in _buckets.keys():
 		var bag: Dictionary = _buckets[room]
 		var holder := Node3D.new()
@@ -308,6 +387,14 @@ func _flush() -> void:
 
 
 func _build_from_dungeon() -> void:
+	var contact := PlaneMesh.new()
+	contact.size = Vector2(2.05, 0.7)
+	_meshes["contact"] = contact
+	var water := PlaneMesh.new()
+	water.size = Vector2(2.4, 2.4)
+	_meshes["water"] = water
+	if _meshes.has("lava_plane"):
+		_meshes["lava_haze"] = _meshes["lava_plane"]
 	for id in _dungeon.room_ids():
 		var o: Vector2 = _dungeon.origin_of(id)
 		var cols := int(ceil(1152.0 / 64.0))
@@ -319,7 +406,7 @@ func _build_from_dungeon() -> void:
 		var ceil_piece := String(_preset.get("ceiling_piece", ""))
 		if _meshes.has(ceil_piece):
 			var along_wall := ceil_piece == "ceiling_beam"
-			var ch := 2.42 if along_wall else 2.75
+			var ch := 3.55 if along_wall else 3.4
 			var ceil_spots: Array[Vector2] = [
 				Vector2(280, 70), Vector2(860, 70), Vector2(300, 575), Vector2(880, 580),
 			]
@@ -334,12 +421,14 @@ func _build_from_dungeon() -> void:
 			var n: int = maxi(1, int(ceil(rect.size.x / 64.0)))
 			for i in n:
 				var px := Vector2(rect.position.x + (i + 0.5) * (rect.size.x / float(n)), rect.position.y + rect.size.y * 0.5)
-				_queue("wall_straight", px, 0.0, Vector3.ONE, 0.0)
+				_queue("wall_straight", px, 0.0, Vector3(1.0, 1.65, 2.1), 0.0)
+				_queue("contact", px, 0.0, Vector3(1.05, 1.0, 1.0), 0.03)
 		else:
 			var n2: int = maxi(1, int(ceil(rect.size.y / 64.0)))
 			for i in n2:
 				var px2 := Vector2(rect.position.x + rect.size.x * 0.5, rect.position.y + (i + 0.5) * (rect.size.y / float(n2)))
-				_queue("wall_straight", px2, PI * 0.5, Vector3.ONE, 0.0)
+				_queue("wall_straight", px2, PI * 0.5, Vector3(1.0, 1.65, 2.1), 0.0)
+				_queue("contact", px2, PI * 0.5, Vector3(1.05, 1.0, 1.0), 0.03)
 
 	_place_props()
 	_place_lava()
@@ -352,27 +441,43 @@ func _build_from_dungeon() -> void:
 func _place_props() -> void:
 	var dressing: Array = _preset.get("dressing", ["rubble", "torch", "skull"])
 	var accent: String = String(_preset.get("accent_piece", ""))
-	# Wall and corner groups. The middle of each wall is a door, so those lanes stay clear.
+	# Visible floor from the 3/4 camera: north and center of the room, off the player.
+	# Level camera looks at x=170. Boss camera looks at the room center (x=576).
+	# Both bands stay on the open floor (y 230-450).
 	var spots := [
-		Vector2(110, 78), Vector2(200, 86), Vector2(300, 74),
-		Vector2(840, 80), Vector2(960, 88), Vector2(1060, 76),
-		Vector2(115, 572), Vector2(210, 578), Vector2(310, 566),
-		Vector2(830, 570), Vector2(960, 564), Vector2(1055, 576),
-		Vector2(76, 150), Vector2(82, 230), Vector2(74, 450), Vector2(86, 530),
-		Vector2(1072, 155), Vector2(1066, 240), Vector2(1074, 455), Vector2(1062, 525),
-		Vector2(150, 130), Vector2(990, 520),
+		Vector2(190, 240), Vector2(290, 250), Vector2(390, 230), Vector2(490, 250),
+		Vector2(180, 330), Vector2(280, 340), Vector2(380, 320), Vector2(480, 340),
+		Vector2(200, 420), Vector2(300, 430), Vector2(400, 410), Vector2(500, 430),
+		Vector2(600, 250), Vector2(700, 240), Vector2(800, 260),
+		Vector2(610, 340), Vector2(710, 330), Vector2(820, 350),
+		Vector2(590, 430), Vector2(700, 420), Vector2(810, 440), Vector2(450, 280),
 	]
 	for id in _dungeon.room_ids():
 		var o: Vector2 = _dungeon.origin_of(id)
 		var n := 0
 		for s in spots:
 			var piece: String = String(dressing[n % dressing.size()])
-			if n % 4 == 0 and accent != "" and _meshes.has(accent):
+			if n % 5 == 0 and accent != "" and _meshes.has(accent):
 				piece = accent
 			var hang := float(_HANG.get(piece, 0.0))
-			var scl := randf_range(1.15, 1.7)
-			_queue(piece, o + s, randf() * TAU, Vector3.ONE * scl, hang)
+			var scl := randf_range(1.55, 2.05)
+			if piece == "banner" or piece == "buttress" or piece == "pillar" or piece == "statue":
+				scl = randf_range(1.15, 1.4)
+			elif piece.begins_with("crystal"):
+				scl = randf_range(2.0, 2.4)
+			elif piece == "glow_mushroom":
+				scl = randf_range(2.6, 3.2)
+			if piece == "stalactite" and n % 2 == 1:
+				_queue(piece, o + s, randf() * TAU, Vector3(scl, -scl, scl), 0.0)
+			else:
+				_queue(piece, o + s, randf() * TAU, Vector3.ONE * scl, hang)
 			n += 1
+		if _meshes.has("crate"):
+			_queue("crate", o + Vector2(280, 340), 0.2, Vector3.ONE * 2.1, 1.35)
+			_queue("crate", o + Vector2(300, 325), 0.8, Vector3.ONE * 1.7, 2.5)
+		if _meshes.has("swamp_tree") and String(_preset.get("id", "")) == "whispering_mire":
+			_queue("swamp_tree", o + Vector2(160, 200), 0.4, Vector3.ONE * 1.15, 0.0)
+			_queue("swamp_tree", o + Vector2(990, 210), 1.2, Vector3.ONE * 1.2, 0.0)
 	var obstacles: Array = _dungeon.obstacles_world() if _dungeon.has_method("obstacles_world") else []
 	for ob in obstacles:
 		var rr: Rect2 = ob["r"]
@@ -432,6 +537,22 @@ func _place_boss_arena() -> void:
 
 
 func _place_lava() -> void:
+	var world := String(_preset.get("id", ""))
+	if world == "emberfall" and _meshes.has("lava_plane"):
+		for id in _dungeon.room_ids():
+			var o: Vector2 = _dungeon.origin_of(id)
+			_queue("lava_plane", o + Vector2(300, 200), 0.0, Vector3(3.4, 1.0, 1.2), 0.06)
+			_queue("lava_haze", o + Vector2(300, 200), 0.0, Vector3(2.9, 1.0, 0.95), 0.2)
+			_queue("lava_plane", o + Vector2(220, 400), 0.4, Vector3(1.55, 1.0, 1.35), 0.06)
+			_queue("lava_haze", o + Vector2(220, 400), 0.4, Vector3(1.25, 1.0, 1.05), 0.2)
+			_queue("lava_plane", o + Vector2(640, 300), 0.0, Vector3(3.2, 1.0, 1.15), 0.06)
+			_queue("lava_haze", o + Vector2(640, 300), 0.0, Vector3(2.7, 1.0, 0.9), 0.2)
+	if world == "whispering_mire" or world == "crystal_deep":
+		for id in _dungeon.room_ids():
+			var o: Vector2 = _dungeon.origin_of(id)
+			_queue("water", o + Vector2(260, 280), 0.2, Vector3(1.7, 1.0, 1.3), 0.03)
+			_queue("water", o + Vector2(360, 400), 0.0, Vector3(1.15, 1.0, 0.95), 0.03)
+			_queue("water", o + Vector2(640, 360), 0.3, Vector3(1.6, 1.0, 1.25), 0.03)
 	if not _meshes.has("lava_plane"):
 		return
 	var lavas: Array = _dungeon.lava_rects_world() if _dungeon.has_method("lava_rects_world") else []
@@ -440,6 +561,7 @@ func _place_lava() -> void:
 		var sx := maxf(rect.size.x * PX_TO_M / TILE_M, 0.55)
 		var sz := maxf(rect.size.y * PX_TO_M / TILE_M, 0.55)
 		_queue("lava_plane", rect.get_center(), 0.0, Vector3(sx, 1.0, sz), 0.04)
+		_queue("lava_haze", rect.get_center(), 0.0, Vector3(sx * 0.85, 1.0, sz * 0.85), 0.16)
 
 
 func _place_torches() -> void:
@@ -447,7 +569,7 @@ func _place_torches() -> void:
 	var by_room: Dictionary = {}
 	for pos in torches:
 		var piece := "torch" if _meshes.has("torch") else "brazier"
-		_queue(piece, pos, 0.0, Vector3.ONE * 0.9, 0.0)
+		_queue(piece, pos, 0.0, Vector3.ONE * 1.6, 0.0)
 		var rid := _room_of(pos)
 		if not by_room.has(rid):
 			by_room[rid] = []
@@ -467,10 +589,11 @@ func _place_torches() -> void:
 		_room_lights[String(id)] = pts
 	# Four reused lights. Only the player's room is lit (hard cap 4 + 1 sun).
 	for i in 4:
-		var light := OmniLight3D.new()
+		var light := SpotLight3D.new()
 		light.light_color = _preset["torch_color"]
-		light.light_energy = float(_preset["torch_energy"])
-		light.omni_range = float(_preset["torch_range"])
+		light.light_energy = float(_preset["torch_energy"]) * 2.2
+		light.spot_range = float(_preset["torch_range"]) * 1.4
+		light.spot_angle = 36.0
 		light.shadow_enabled = false
 		light.visible = false
 		_pivot.add_child(light)
@@ -487,17 +610,31 @@ func _setup_camera() -> void:
 
 func _setup_weather() -> void:
 	_weather = GPUParticles3D.new()
-	_weather.amount = 40
-	_weather.lifetime = 3.2
+	var world := String(_preset.get("id", ""))
+	_weather.amount = 80 if world == "emberfall" else 70
+	_weather.lifetime = 3.4
 	var mat := ParticleProcessMaterial.new()
-	mat.direction = Vector3(0.2, 1.0, 0.1)
-	mat.spread = 22.0
-	mat.initial_velocity_min = 0.3
-	mat.initial_velocity_max = 1.2
-	mat.gravity = Vector3(0, 0.12, 0)
-	mat.scale_min = 0.04
-	mat.scale_max = 0.1
-	mat.color = _preset.get("particle_color", Color(1.0, 0.4, 0.08, 0.8))
+	mat.spread = 30.0
+	mat.initial_velocity_min = 0.2
+	mat.initial_velocity_max = 0.9
+	if world == "emberfall":
+		mat.direction = Vector3(0.05, 1.0, 0.0)
+		mat.gravity = Vector3(0, 0.45, 0)
+		mat.scale_min = 0.05
+		mat.scale_max = 0.12
+		mat.color = Color(1.0, 0.42, 0.08, 0.9)
+	elif world == "whispering_mire":
+		mat.direction = Vector3(0.3, 0.35, 0.1)
+		mat.gravity = Vector3(0, 0.04, 0)
+		mat.scale_min = 0.06
+		mat.scale_max = 0.16
+		mat.color = Color(0.9, 1.0, 0.35, 0.92)
+	else:
+		mat.direction = Vector3(0.1, -0.15, 0.05)
+		mat.gravity = Vector3(0, -0.04, 0)
+		mat.scale_min = 0.04
+		mat.scale_max = 0.1
+		mat.color = Color(0.75, 0.65, 1.0, 0.75)
 	_weather.process_material = mat
 	var draw := SphereMesh.new()
 	draw.radius = 0.05
@@ -540,10 +677,11 @@ func _focus_room_lights() -> void:
 	_focus_room = rid
 	var pts: Array = _room_lights.get(rid, [])
 	for i in _lights.size():
-		var L: OmniLight3D = _lights[i]
+		var L: SpotLight3D = _lights[i]
 		if i < pts.size():
 			L.visible = true
-			L.position = _to3(pts[i], 1.7)
+			L.position = _to3(pts[i], 2.6)
+			L.rotation_degrees = Vector3(-58.0, float(i) * 80.0, 0.0)
 		else:
 			L.visible = false
 
@@ -556,7 +694,7 @@ func _process(delta: float) -> void:
 	_flicker_t += delta
 	var base_e: float = float(_preset["torch_energy"]) * float(_preset.get("lighting_boost", 1.0))
 	for i in _lights.size():
-		var L: OmniLight3D = _lights[i]
+		var L: SpotLight3D = _lights[i]
 		if is_instance_valid(L) and L.visible:
 			L.light_energy = base_e * (0.82 + 0.18 * sin(_flicker_t * 6.0 + float(i)))
 
@@ -570,7 +708,12 @@ func debug_stats() -> String:
 			worst_tris = int(_room_tris[id])
 			worst_draws = int(_room_draws.get(id, 0))
 			worst_id = String(id)
-	return "worst_room=%s tris=%d draws=%d rooms=%d" % [worst_id, worst_tris, worst_draws, _room_tris.size()]
+	var min_props := 9999
+	for id in _room_props.keys():
+		min_props = mini(min_props, int(_room_props[id]))
+	if min_props == 9999:
+		min_props = 0
+	return "worst_room=%s tris=%d draws=%d rooms=%d min_props=%d" % [worst_id, worst_tris, worst_draws, _room_tris.size(), min_props]
 
 
 func grab_frame() -> Image:
