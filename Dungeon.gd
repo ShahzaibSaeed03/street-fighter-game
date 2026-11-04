@@ -656,6 +656,29 @@ func _wall_rects(id: String) -> Array[Rect2]:
 
 
 var _wall_draw: Array[Rect2] = []
+## When true, floor/walls draw faintly so Env3D can own the look (collisions unchanged).
+var env3d_overlay: bool = false
+
+
+func set_env3d_overlay(on: bool) -> void:
+	env3d_overlay = on
+	queue_redraw()
+
+
+func wall_rects_world() -> Array[Rect2]:
+	return _wall_draw
+
+
+func obstacles_world() -> Array[Dictionary]:
+	return _obstacles
+
+
+func torch_positions() -> Array[Vector2]:
+	return _torches
+
+
+func lava_rects_world() -> Array[Rect2]:
+	return _lava
 
 
 func _build_walls(id: String) -> void:
@@ -1361,6 +1384,8 @@ func _draw() -> void:
 		var tint: Color = _tints[id]
 		var base: Color = _lv["floor"]
 		var mod := Color(clampf(tint.r / base.r, 0.4, 2.0), clampf(tint.g / base.g, 0.4, 2.0), clampf(tint.b / base.b, 0.4, 2.0), 1.0)
+		if env3d_overlay:
+			mod.a = 0.12
 		draw_texture_rect(_floor_tex, Rect2(o, Vector2(RW, RH)), true, mod)
 		# rug / rune circle for flavour
 		var c: Vector2 = o + Vector2(RW, RH) * 0.5
@@ -1412,8 +1437,11 @@ func _draw() -> void:
 		col.a = 0.78
 		for b in sp["blobs"]:
 			draw_circle(sp["pos"] + b[0], b[1], col)
-	# walls
+	# walls (ghosted when Env3D is active)
 	for w in _wall_draw:
+		if env3d_overlay:
+			draw_rect(w, Color(_lv["wall_dark"], 0.18))
+			continue
 		draw_rect(w, _lv["wall_dark"])
 		draw_texture_rect(_wall_tex, w.grow(-4.0), true)
 		draw_rect(w.grow(-4.0), Color(0, 0, 0, 0.3), false, 3.0)

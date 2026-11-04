@@ -1,0 +1,2139 @@
+{
+  "kenney_modular-dungeon-kit_1.0": [
+    {
+      "file": "corridor-corner.glb",
+      "bytes": 80616,
+      "mesh_count": 1,
+      "tris": 858,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.2333
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "corridor-end.glb",
+      "bytes": 126740,
+      "mesh_count": 1,
+      "tris": 1348,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.15
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.15
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "corridor-intersection.glb",
+      "bytes": 35028,
+      "mesh_count": 1,
+      "tris": 340,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.05
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "corridor-junction.glb",
+      "bytes": 60144,
+      "mesh_count": 1,
+      "tris": 620,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0058,
+          2.0,
+          4.15
+        ],
+        "size": [
+          4.0058,
+          4.0,
+          4.15
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4993
+    },
+    {
+      "file": "corridor-transition.glb",
+      "bytes": 236320,
+      "mesh_count": 1,
+      "tris": 2524,
+      "bounds": {
+        "min": [
+          -6.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          4.0,
+          4.15
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.15
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide-corner.glb",
+      "bytes": 164848,
+      "mesh_count": 1,
+      "tris": 1766,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.2333
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide-end.glb",
+      "bytes": 327232,
+      "mesh_count": 1,
+      "tris": 3514,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.2333
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide-intersection.glb",
+      "bytes": 36236,
+      "mesh_count": 1,
+      "tris": 352,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.05
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide-junction.glb",
+      "bytes": 127796,
+      "mesh_count": 1,
+      "tris": 1350,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.2333
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide.glb",
+      "bytes": 219188,
+      "mesh_count": 1,
+      "tris": 2348,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.2333
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor.glb",
+      "bytes": 85104,
+      "mesh_count": 1,
+      "tris": 900,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.15
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.15
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "gate-door-window.glb",
+      "bytes": 95080,
+      "mesh_count": 2,
+      "tris": 1048,
+      "bounds": {
+        "min": [
+          -2.2,
+          -0.7,
+          -0.0
+        ],
+        "max": [
+          2.2,
+          1.1833,
+          4.4
+        ],
+        "size": [
+          4.4,
+          1.8833,
+          4.4
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4545
+    },
+    {
+      "file": "gate-door.glb",
+      "bytes": 90640,
+      "mesh_count": 2,
+      "tris": 984,
+      "bounds": {
+        "min": [
+          -2.2,
+          -0.7,
+          -0.0
+        ],
+        "max": [
+          2.2,
+          1.1833,
+          4.4
+        ],
+        "size": [
+          4.4,
+          1.8833,
+          4.4
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4545
+    },
+    {
+      "file": "gate-metal-bars.glb",
+      "bytes": 68172,
+      "mesh_count": 2,
+      "tris": 720,
+      "bounds": {
+        "min": [
+          -2.2,
+          -0.7,
+          0.0
+        ],
+        "max": [
+          2.2,
+          0.7,
+          4.4
+        ],
+        "size": [
+          4.4,
+          1.4,
+          4.4
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4545
+    },
+    {
+      "file": "gate.glb",
+      "bytes": 53804,
+      "mesh_count": 1,
+      "tris": 592,
+      "bounds": {
+        "min": [
+          -2.2,
+          -0.7,
+          0.0
+        ],
+        "max": [
+          2.2,
+          0.7,
+          4.4
+        ],
+        "size": [
+          4.4,
+          1.4,
+          4.4
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4545
+    },
+    {
+      "file": "room-corner.glb",
+      "bytes": 437160,
+      "mesh_count": 1,
+      "tris": 4718,
+      "bounds": {
+        "min": [
+          -6.0,
+          -6.0,
+          -0.0
+        ],
+        "max": [
+          6.0,
+          6.0,
+          4.2333
+        ],
+        "size": [
+          12.0,
+          12.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1667
+    },
+    {
+      "file": "room-large-variation.glb",
+      "bytes": 875848,
+      "mesh_count": 1,
+      "tris": 9304,
+      "bounds": {
+        "min": [
+          -10.0,
+          -10.0,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          10.0,
+          4.2333
+        ],
+        "size": [
+          20.0,
+          20.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "room-large.glb",
+      "bytes": 921468,
+      "mesh_count": 1,
+      "tris": 9776,
+      "bounds": {
+        "min": [
+          -10.001,
+          -10.0,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          10.0,
+          4.2333
+        ],
+        "size": [
+          20.001,
+          20.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "room-small-variation.glb",
+      "bytes": 421372,
+      "mesh_count": 1,
+      "tris": 4464,
+      "bounds": {
+        "min": [
+          -6.0,
+          -6.0,
+          -0.0
+        ],
+        "max": [
+          6.0,
+          6.0,
+          4.2333
+        ],
+        "size": [
+          12.0,
+          12.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1667
+    },
+    {
+      "file": "room-small.glb",
+      "bytes": 412996,
+      "mesh_count": 1,
+      "tris": 4388,
+      "bounds": {
+        "min": [
+          -6.0,
+          -6.0,
+          -0.0
+        ],
+        "max": [
+          6.0,
+          6.0,
+          4.2333
+        ],
+        "size": [
+          12.0,
+          12.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1667
+    },
+    {
+      "file": "room-wide-variation.glb",
+      "bytes": 827716,
+      "mesh_count": 1,
+      "tris": 8864,
+      "bounds": {
+        "min": [
+          -10.0,
+          -6.0,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          6.0,
+          4.2333
+        ],
+        "size": [
+          20.0,
+          12.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "room-wide.glb",
+      "bytes": 684096,
+      "mesh_count": 1,
+      "tris": 7268,
+      "bounds": {
+        "min": [
+          -10.0,
+          -6.0,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          6.0,
+          4.2333
+        ],
+        "size": [
+          20.0,
+          12.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "stairs-wide.glb",
+      "bytes": 280952,
+      "mesh_count": 1,
+      "tris": 3194,
+      "bounds": {
+        "min": [
+          -4.2,
+          -2.2,
+          -0.0
+        ],
+        "max": [
+          4.2,
+          6.2,
+          8.55
+        ],
+        "size": [
+          8.4,
+          8.4,
+          8.55
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.2381
+    },
+    {
+      "file": "stairs.glb",
+      "bytes": 271196,
+      "mesh_count": 1,
+      "tris": 3074,
+      "bounds": {
+        "min": [
+          -2.2,
+          -2.2,
+          -0.0
+        ],
+        "max": [
+          2.2,
+          6.2,
+          8.55
+        ],
+        "size": [
+          4.4,
+          8.4,
+          8.55
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4545
+    },
+    {
+      "file": "template-corner.glb",
+      "bytes": 72396,
+      "mesh_count": 1,
+      "tris": 774,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.2333
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-detail.glb",
+      "bytes": 18216,
+      "mesh_count": 1,
+      "tris": 176,
+      "bounds": {
+        "min": [
+          -0.8957,
+          -0.8957,
+          0.0
+        ],
+        "max": [
+          0.8957,
+          0.8957,
+          4.2333
+        ],
+        "size": [
+          1.7913,
+          1.7913,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 1.1165
+    },
+    {
+      "file": "template-floor-big.glb",
+      "bytes": 50396,
+      "mesh_count": 1,
+      "tris": 492,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.2333
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "template-floor-detail-a.glb",
+      "bytes": 22668,
+      "mesh_count": 1,
+      "tris": 204,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          0.1
+        ],
+        "size": [
+          4.0,
+          4.0,
+          0.1
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-floor-detail.glb",
+      "bytes": 22664,
+      "mesh_count": 1,
+      "tris": 204,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          0.1
+        ],
+        "size": [
+          4.0,
+          4.0,
+          0.1
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-floor-layer-hole.glb",
+      "bytes": 41092,
+      "mesh_count": 1,
+      "tris": 384,
+      "bounds": {
+        "min": [
+          -2.0216,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0217,
+          2.0,
+          3.0892
+        ],
+        "size": [
+          4.0433,
+          4.0,
+          3.0892
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4946
+    },
+    {
+      "file": "template-floor-layer-raised.glb",
+      "bytes": 33704,
+      "mesh_count": 1,
+      "tris": 312,
+      "bounds": {
+        "min": [
+          -2.0119,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0119,
+          2.0,
+          3.0
+        ],
+        "size": [
+          4.0237,
+          4.0,
+          3.0
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4971
+    },
+    {
+      "file": "template-floor-layer.glb",
+      "bytes": 18992,
+      "mesh_count": 1,
+      "tris": 168,
+      "bounds": {
+        "min": [
+          -2.0119,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0119,
+          2.0,
+          0.5
+        ],
+        "size": [
+          4.0237,
+          4.0,
+          0.5
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4971
+    },
+    {
+      "file": "template-floor.glb",
+      "bytes": 2052,
+      "mesh_count": 1,
+      "tris": 4,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          0.0
+        ],
+        "size": [
+          4.0,
+          4.0,
+          0.0
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall-corner.glb",
+      "bytes": 9688,
+      "mesh_count": 1,
+      "tris": 84,
+      "bounds": {
+        "min": [
+          -1.002,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.0,
+          1.002,
+          4.05
+        ],
+        "size": [
+          1.002,
+          1.002,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 1.996
+    },
+    {
+      "file": "template-wall-detail-a.glb",
+      "bytes": 58744,
+      "mesh_count": 1,
+      "tris": 614,
+      "bounds": {
+        "min": [
+          -2.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          1.9936,
+          4.2333
+        ],
+        "size": [
+          4.0,
+          1.9936,
+          4.2333
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall-half.glb",
+      "bytes": 27220,
+      "mesh_count": 1,
+      "tris": 276,
+      "bounds": {
+        "min": [
+          -1.0,
+          -0.0,
+          0.0
+        ],
+        "max": [
+          1.0,
+          1.8074,
+          4.15
+        ],
+        "size": [
+          2.0,
+          1.8074,
+          4.15
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 1.0
+    },
+    {
+      "file": "template-wall-stairs.glb",
+      "bytes": 15376,
+      "mesh_count": 1,
+      "tris": 170,
+      "bounds": {
+        "min": [
+          -2.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          0.6261,
+          4.5
+        ],
+        "size": [
+          4.0,
+          0.6261,
+          4.5
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall-top.glb",
+      "bytes": 27600,
+      "mesh_count": 1,
+      "tris": 330,
+      "bounds": {
+        "min": [
+          -2.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          0.6185,
+          4.5
+        ],
+        "size": [
+          4.0,
+          0.6185,
+          4.5
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall.glb",
+      "bytes": 43216,
+      "mesh_count": 1,
+      "tris": 448,
+      "bounds": {
+        "min": [
+          -2.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          1.9936,
+          4.15
+        ],
+        "size": [
+          4.0,
+          1.9936,
+          4.15
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    }
+  ],
+  "kenney_modular-cave-kit_1.0": [
+    {
+      "file": "corridor-corner.glb",
+      "bytes": 66572,
+      "mesh_count": 1,
+      "tris": 624,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.4005
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "corridor-end.glb",
+      "bytes": 128884,
+      "mesh_count": 1,
+      "tris": 1324,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.05
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "corridor-intersection.glb",
+      "bytes": 24464,
+      "mesh_count": 1,
+      "tris": 244,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.05
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "corridor-junction.glb",
+      "bytes": 55584,
+      "mesh_count": 1,
+      "tris": 564,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0058,
+          2.0,
+          4.05
+        ],
+        "size": [
+          4.0058,
+          4.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4993
+    },
+    {
+      "file": "corridor-transition.glb",
+      "bytes": 219484,
+      "mesh_count": 1,
+      "tris": 2276,
+      "bounds": {
+        "min": [
+          -6.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          4.0,
+          4.05
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide-corner.glb",
+      "bytes": 152320,
+      "mesh_count": 1,
+      "tris": 1516,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.4005
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide-end.glb",
+      "bytes": 233460,
+      "mesh_count": 1,
+      "tris": 2428,
+      "bounds": {
+        "min": [
+          -4.1172,
+          -4.1172,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.1172,
+          4.4005
+        ],
+        "size": [
+          8.1172,
+          8.2345,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.2464
+    },
+    {
+      "file": "corridor-wide-intersection.glb",
+      "bytes": 25704,
+      "mesh_count": 1,
+      "tris": 256,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.05
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide-junction.glb",
+      "bytes": 91252,
+      "mesh_count": 1,
+      "tris": 940,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.1172,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.4005
+        ],
+        "size": [
+          8.0,
+          8.1172,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor-wide.glb",
+      "bytes": 156680,
+      "mesh_count": 1,
+      "tris": 1624,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.1172,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.1172,
+          4.4005
+        ],
+        "size": [
+          8.0,
+          8.2345,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "corridor.glb",
+      "bytes": 86560,
+      "mesh_count": 1,
+      "tris": 884,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.05
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "gate-metal-bars.glb",
+      "bytes": 68172,
+      "mesh_count": 2,
+      "tris": 720,
+      "bounds": {
+        "min": [
+          -2.2,
+          -0.7,
+          0.0
+        ],
+        "max": [
+          2.2,
+          0.7,
+          4.4
+        ],
+        "size": [
+          4.4,
+          1.4,
+          4.4
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4545
+    },
+    {
+      "file": "gate-overhang.glb",
+      "bytes": 10140,
+      "mesh_count": 1,
+      "tris": 104,
+      "bounds": {
+        "min": [
+          -2.0,
+          -1.0272,
+          3.25
+        ],
+        "max": [
+          2.0,
+          1.0272,
+          4.05
+        ],
+        "size": [
+          4.0,
+          2.0545,
+          0.8
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "gate-rock.glb",
+      "bytes": 31728,
+      "mesh_count": 1,
+      "tris": 360,
+      "bounds": {
+        "min": [
+          -2.0,
+          -1.2272,
+          0.0
+        ],
+        "max": [
+          2.0,
+          1.2272,
+          4.05
+        ],
+        "size": [
+          4.0,
+          2.4545,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "gate.glb",
+      "bytes": 53804,
+      "mesh_count": 1,
+      "tris": 592,
+      "bounds": {
+        "min": [
+          -2.2,
+          -0.7,
+          0.0
+        ],
+        "max": [
+          2.2,
+          0.7,
+          4.4
+        ],
+        "size": [
+          4.4,
+          1.4,
+          4.4
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4545
+    },
+    {
+      "file": "ladder.glb",
+      "bytes": 17324,
+      "mesh_count": 1,
+      "tris": 160,
+      "bounds": {
+        "min": [
+          -0.573,
+          -0.142,
+          0.0
+        ],
+        "max": [
+          0.573,
+          0.142,
+          2.9
+        ],
+        "size": [
+          1.146,
+          0.284,
+          2.9
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 1.7452
+    },
+    {
+      "file": "room-corner.glb",
+      "bytes": 363032,
+      "mesh_count": 1,
+      "tris": 3612,
+      "bounds": {
+        "min": [
+          -6.0,
+          -6.1172,
+          -0.0
+        ],
+        "max": [
+          6.1172,
+          6.0,
+          4.4005
+        ],
+        "size": [
+          12.1172,
+          12.1172,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1651
+    },
+    {
+      "file": "room-large-variation.glb",
+      "bytes": 791784,
+      "mesh_count": 1,
+      "tris": 7956,
+      "bounds": {
+        "min": [
+          -10.0,
+          -10.1172,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          10.1172,
+          4.4005
+        ],
+        "size": [
+          20.0,
+          20.2345,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "room-large.glb",
+      "bytes": 804964,
+      "mesh_count": 1,
+      "tris": 8080,
+      "bounds": {
+        "min": [
+          -10.001,
+          -10.1172,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          10.1172,
+          4.4005
+        ],
+        "size": [
+          20.001,
+          20.2345,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "room-small-variation.glb",
+      "bytes": 385728,
+      "mesh_count": 1,
+      "tris": 3868,
+      "bounds": {
+        "min": [
+          -6.0,
+          -6.0,
+          -0.0
+        ],
+        "max": [
+          6.0,
+          6.0,
+          4.4005
+        ],
+        "size": [
+          12.0,
+          12.0,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1667
+    },
+    {
+      "file": "room-small.glb",
+      "bytes": 346532,
+      "mesh_count": 1,
+      "tris": 3356,
+      "bounds": {
+        "min": [
+          -6.0,
+          -6.0,
+          -0.0
+        ],
+        "max": [
+          6.0,
+          6.0,
+          4.4005
+        ],
+        "size": [
+          12.0,
+          12.0,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1667
+    },
+    {
+      "file": "room-wide-variation.glb",
+      "bytes": 666560,
+      "mesh_count": 1,
+      "tris": 6704,
+      "bounds": {
+        "min": [
+          -10.0,
+          -6.1172,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          6.1172,
+          4.4005
+        ],
+        "size": [
+          20.0,
+          12.2345,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "room-wide.glb",
+      "bytes": 550380,
+      "mesh_count": 1,
+      "tris": 5460,
+      "bounds": {
+        "min": [
+          -10.0,
+          -6.1172,
+          -0.0
+        ],
+        "max": [
+          10.0,
+          6.1172,
+          4.4005
+        ],
+        "size": [
+          20.0,
+          12.2345,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.1
+    },
+    {
+      "file": "stairs-wide.glb",
+      "bytes": 237464,
+      "mesh_count": 1,
+      "tris": 2506,
+      "bounds": {
+        "min": [
+          -4.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          6.0,
+          8.55
+        ],
+        "size": [
+          8.0,
+          8.0,
+          8.55
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "stairs.glb",
+      "bytes": 227896,
+      "mesh_count": 1,
+      "tris": 2386,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          6.0,
+          8.55
+        ],
+        "size": [
+          4.0,
+          8.0,
+          8.55
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-corner.glb",
+      "bytes": 61028,
+      "mesh_count": 1,
+      "tris": 564,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          4.4005
+        ],
+        "size": [
+          4.0,
+          4.0,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-detail.glb",
+      "bytes": 32636,
+      "mesh_count": 1,
+      "tris": 320,
+      "bounds": {
+        "min": [
+          -1.2765,
+          -1.5124,
+          0.0
+        ],
+        "max": [
+          1.368,
+          1.3,
+          4.3484
+        ],
+        "size": [
+          2.6444,
+          2.8124,
+          4.3484
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.7563
+    },
+    {
+      "file": "template-floor-big.glb",
+      "bytes": 64824,
+      "mesh_count": 1,
+      "tris": 636,
+      "bounds": {
+        "min": [
+          -4.0,
+          -4.0,
+          -0.0
+        ],
+        "max": [
+          4.0,
+          4.0,
+          4.3484
+        ],
+        "size": [
+          8.0,
+          8.0,
+          4.3484
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.25
+    },
+    {
+      "file": "template-floor-detail-a.glb",
+      "bytes": 22672,
+      "mesh_count": 1,
+      "tris": 204,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          0.1
+        ],
+        "size": [
+          4.0,
+          4.0,
+          0.1
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-floor-detail.glb",
+      "bytes": 22664,
+      "mesh_count": 1,
+      "tris": 204,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          0.1
+        ],
+        "size": [
+          4.0,
+          4.0,
+          0.1
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-floor-layer-hole.glb",
+      "bytes": 41092,
+      "mesh_count": 1,
+      "tris": 384,
+      "bounds": {
+        "min": [
+          -2.0216,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0217,
+          2.0,
+          3.0892
+        ],
+        "size": [
+          4.0433,
+          4.0,
+          3.0892
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4946
+    },
+    {
+      "file": "template-floor-layer-raised.glb",
+      "bytes": 33704,
+      "mesh_count": 1,
+      "tris": 312,
+      "bounds": {
+        "min": [
+          -2.0119,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0119,
+          2.0,
+          3.0
+        ],
+        "size": [
+          4.0237,
+          4.0,
+          3.0
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4971
+    },
+    {
+      "file": "template-floor-layer.glb",
+      "bytes": 18996,
+      "mesh_count": 1,
+      "tris": 168,
+      "bounds": {
+        "min": [
+          -2.0119,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0119,
+          2.0,
+          0.5
+        ],
+        "size": [
+          4.0237,
+          4.0,
+          0.5
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.4971
+    },
+    {
+      "file": "template-floor.glb",
+      "bytes": 2052,
+      "mesh_count": 1,
+      "tris": 4,
+      "bounds": {
+        "min": [
+          -2.0,
+          -2.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          2.0,
+          0.0
+        ],
+        "size": [
+          4.0,
+          4.0,
+          0.0
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall-corner.glb",
+      "bytes": 7120,
+      "mesh_count": 1,
+      "tris": 60,
+      "bounds": {
+        "min": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          0.0,
+          1.0,
+          4.05
+        ],
+        "size": [
+          1.0,
+          1.0,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 2.0
+    },
+    {
+      "file": "template-wall-detail-a.glb",
+      "bytes": 41936,
+      "mesh_count": 1,
+      "tris": 420,
+      "bounds": {
+        "min": [
+          -2.0,
+          -0.1172,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          1.9024,
+          4.4005
+        ],
+        "size": [
+          4.0,
+          2.0196,
+          4.4005
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall-half.glb",
+      "bytes": 19996,
+      "mesh_count": 1,
+      "tris": 192,
+      "bounds": {
+        "min": [
+          -1.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          1.0,
+          1.8074,
+          4.05
+        ],
+        "size": [
+          2.0,
+          1.8074,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 1.0
+    },
+    {
+      "file": "template-wall-stairs.glb",
+      "bytes": 10884,
+      "mesh_count": 1,
+      "tris": 104,
+      "bounds": {
+        "min": [
+          -2.0,
+          0.0,
+          0.0
+        ],
+        "max": [
+          2.0,
+          1.1272,
+          4.5
+        ],
+        "size": [
+          4.0,
+          1.1272,
+          4.5
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall-top.glb",
+      "bytes": 15316,
+      "mesh_count": 1,
+      "tris": 148,
+      "bounds": {
+        "min": [
+          -2.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          1.1272,
+          4.5
+        ],
+        "size": [
+          4.0,
+          1.1272,
+          4.5
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    },
+    {
+      "file": "template-wall.glb",
+      "bytes": 43956,
+      "mesh_count": 1,
+      "tris": 440,
+      "bounds": {
+        "min": [
+          -2.0,
+          0.0,
+          -0.0
+        ],
+        "max": [
+          2.0,
+          2.162,
+          4.05
+        ],
+        "size": [
+          4.0,
+          2.162,
+          4.05
+        ]
+      },
+      "textures": [
+        "colormap (512x512)"
+      ],
+      "suggested_scale_to_2m_tile": 0.5
+    }
+  ]
+}

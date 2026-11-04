@@ -10,6 +10,8 @@ const VIGNETTE_SHADER := preload("res://vignette.gdshader")
 const LevelsScript := preload("res://Levels.gd")
 const SaveScript := preload("res://Save.gd")
 const WeatherScript := preload("res://Weather.gd")
+const Env3DScript := preload("res://Env3D.gd")
+const Levels3DScript := preload("res://Levels3D.gd")
 
 var level_idx: int = 0
 var lv: Dictionary = {}
@@ -47,6 +49,7 @@ var _menu_btn: Button
 var _coin_label: Label
 var _ammo_label: Label
 var _weather: CPUParticles2D
+var _env3d: CanvasLayer
 var _level_label: Label
 var _end_title: Label
 var _end_body: Label
@@ -115,6 +118,13 @@ func _ready() -> void:
 		camera.position_smoothing_speed = 12.0
 		camera.position = player.global_position
 		camera.reset_smoothing()
+
+	# Emberfall-only 3D backdrop (other worlds keep pure 2D until approved).
+	if Levels3DScript.has_3d(level_idx):
+		_env3d = CanvasLayer.new()
+		_env3d.set_script(Env3DScript)
+		add_child(_env3d)
+		_env3d.setup(dungeon, player, level_idx)
 
 	_build_ui()
 	player.health_changed.connect(_on_health_changed)
